@@ -1,0 +1,121 @@
+﻿@page "/counter";
+@using Models;
+@inject HttpClient Http
+@namespace BlazorApp.Pages
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Mvc.RazorPages
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@if (categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <br />
+    <b>Kategorie: </b>
+    <select @onchange=@SelectedCategoryChanged name="categoriesSelect">
+        <option value="-1">-</option>
+        @foreach (Category item in categories)
+        {
+            <option value="@item.ID">@item.Name</option>
+        }
+    </select>
+
+    @if (SelectedOption != "-1" && products != null)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Ilość</th>
+                    <th>J.M.</th>
+                    <th>Cena</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Product item in products)
+                {
+                    <tr>
+                        <th><a href="/productdetails/@item.ID">@item.Name</a></th>
+                        <th>@item.Amount</th>
+                        <th>@GetUnitName(item.UnitID)</th>
+                        <th>@item.PriceNetto</th>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+}
+
+
+@code {
+    int currentCount = 0;
+
+    private List<Product> products { get; set; }
+    private List<Unit> units { get; set; }
+    private List<Category> categories { get; set; }
+    private string SelectedOption { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //products = await Http.GetJsonAsync<List<Product>>("https://localhost:5001/api/Products");
+        //products.Sort((p, q) => p.Name.CompareTo(q.Name));
+        units = await Http.GetJsonAsync<List<Unit>>("https://localhost:5001/api/units");
+        categories = await Http.GetJsonAsync<List<Category>>("https://localhost:5001/api/categories");
+        SelectedOption = "-1";
+    }
+
+    async Task SelectedCategoryChanged(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() == "-1")
+        {
+            SelectedOption = "-1";
+        }
+        else
+        {
+            SelectedOption = e.Value.ToString();
+            await FillProductsByCategoryId(SelectedOption);
+            this.StateHasChanged();
+        }
+    }
+
+    async Task FillProductsByCategoryId(string id)
+    {
+        products = await Http.GetJsonAsync<List<Product>>("https://localhost:5001/api/Products/bycategoryid/" + id.ToString());
+    }
+
+    async Task<string> GetUnit(Guid id)
+    {
+        string a = "https://localhost:5001/api/Units/byproductid/";
+        a += id.ToString();
+        var temp = await Http.GetJsonAsync<Unit>(a);
+        return temp.Name;
+    }
+
+    
+
+    string GetUnitName(Guid id)
+    {
+        foreach (Unit item in units)
+        {
+            if (item.ID == id) return item.Name;
+        }
+        return "BŁĄD";
+    }
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    //<th>@(Http.GetJsonAsync<Unit>("https://localhost:5001/api/units/"+item.UnitID)).Name</th>
+
+    //@GetUnit(item.UnitID).Result.Name
+}

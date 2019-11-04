@@ -1,0 +1,30 @@
+﻿@page "/productdetails/{id:guid}"
+@inject HttpClient Http
+@using Models
+
+
+
+<h3>Component</h3>
+
+@if(product == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <b>Nazwa: </b>@product.Name
+    <b>Ilość: </b>@product.Amount
+}
+
+@code {
+    [Parameter]
+    public Guid id { get; set; }
+
+    private Product product { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        product = await Http.GetJsonAsync<Product>("https://localhost:5001/api/Products/" + id.ToString());
+    }
+
+}
