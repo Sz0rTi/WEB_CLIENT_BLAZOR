@@ -65,8 +65,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        //products = await Http.GetJsonAsync<List<Product>>("https://localhost:5001/api/Products");
-        //products.Sort((p, q) => p.Name.CompareTo(q.Name));
         units = await Http.GetJsonAsync<List<Unit>>("https://localhost:5001/api/units");
         categories = await Http.GetJsonAsync<List<Category>>("https://localhost:5001/api/categories");
         SelectedOption = "-1";
@@ -89,6 +87,7 @@ else
     async Task FillProductsByCategoryId(string id)
     {
         products = await Http.GetJsonAsync<List<Product>>("https://localhost:5001/api/Products/bycategoryid/" + id.ToString());
+        products.Sort((p, q) => p.Name.CompareTo(q.Name));
     }
 
     async Task<string> GetUnit(Guid id)
@@ -98,8 +97,6 @@ else
         var temp = await Http.GetJsonAsync<Unit>(a);
         return temp.Name;
     }
-
-    
 
     string GetUnitName(Guid id)
     {
