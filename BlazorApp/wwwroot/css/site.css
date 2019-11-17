@@ -8,6 +8,13 @@ a, .btn-link {
     color: #0366d6;
 }
 
+table, th, td {
+    border: 1px solid black;
+    table-layout: fixed;
+    width: auto;
+    word-wrap: break-word;
+}
+
 .btn-primary {
   color: #fff;
   background-color: #1b6ec2;
@@ -147,4 +154,5 @@ app {
         /* Never collapse the sidebar for wide screens */
         display: block;
     }
+
 }

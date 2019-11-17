@@ -1,7 +1,8 @@
-﻿@page "/counter";
-@using Models;
+﻿@page "/counter"
+@using Models
 @inject HttpClient Http
 @namespace BlazorApp.Pages
+@using Models.Out
 @using Microsoft.AspNetCore.Mvc
 @using Microsoft.AspNetCore.Mvc.RazorPages
 
@@ -52,6 +53,17 @@ else
         </table>
     }
 
+<EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+
+    <div class="alert @StatusClass">@StatusMessage</div>
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText Id="name" Class="form-control" @bind-Value="@Model.Name"></InputText>
+    <ValidationMessage For="@(() => Model.Name)" />
+</EditForm>
+
 }
 
 
@@ -62,6 +74,24 @@ else
     private List<Unit> units { get; set; }
     private List<Category> categories { get; set; }
     private string SelectedOption { get; set; }
+
+    private ClientOut Model = new ClientOut();
+
+    private string StatusMessage;
+    private string StatusClass;
+ 
+ 
+    protected void HandleValidSubmit()
+    {
+        StatusClass = "alert-info";
+        StatusMessage = DateTime.Now + " Handle valid submit";
+    }
+ 
+    protected void HandleInvalidSubmit()
+    {
+        StatusClass = "alert-danger";
+        StatusMessage = DateTime.Now + " Handle invalid submit";
+    }
 
     protected override async Task OnInitializedAsync()
     {

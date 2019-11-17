@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace BlazorApp.Models.Out
 {
-    public class ProductSellOut
+    public class ProductSell
     {
         public Guid ProductID { get; set; }
+        public string Name { get; set; }
         public int Amount { get; set; }
         public double PricePerItemNetto { get; set; }
         public double PricePerItemBrutto { get; set; }

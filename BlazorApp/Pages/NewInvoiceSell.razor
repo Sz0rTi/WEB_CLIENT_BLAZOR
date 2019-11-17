@@ -1,0 +1,312 @@
+﻿@page "/newinvoicesell"
+@using Models
+@using Models.Out
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+
+<h3>NewInvoiceSellModel</h3>
+
+@if (Units == null || Clients == null || Categories == null)
+{
+    <h2>Loading...</h2>
+}
+else
+{
+
+<div id="main">
+    @if (client == null)
+    {
+        <div id="clientInfo">
+            <b>Nazwa firmy: </b>
+            <label>
+                Wybierz firmę:<br />
+                <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" />
+                <datalist id="clients">
+
+                    <label>
+                        or select one from the list:
+                        <select name="clients">
+                            @foreach (Client item in Clients)
+                            {
+                                <option value="@item.Name" data-id="@item.ID" />
+                            }
+                        </select>
+                    </label>
+
+                </datalist>
+
+            </label>
+
+            <br /><b>Ulica: </b>
+            <input type="text" value="" />
+            <br /><b>Numer: </b>
+            <input type="text" value="" />
+            <br /><b>Kod pocztowy: </b>
+            <input type="text" value="" />
+            <br /><b>NIP: </b>
+            <input id=nipinput @bind="@nip" />
+            <button class="btn btn-primary" @onclick="SearchByNip">Click me</button>
+        </div>
+
+    }
+    else
+    {
+        <div id="clientInfo">
+            <b>Nazwa firmy: </b>
+            <label>
+                Wybierz firmę:<br />
+                <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" value="@client.Name" />
+                <datalist id="clients">
+
+                    <label>
+                        or select one from the list:
+                        <select name="clients">
+                            @foreach (Client item in Clients)
+                            {
+                                <option value="@item.Name" data-id="@item.ID" />
+                            }
+                        </select>
+                    </label>
+
+                </datalist>
+
+            </label>
+
+            <br /><b>Ulica: </b>
+            <input type="text" value="@client.Street" />
+            <br /><b>Numer: </b>
+            <input type="text" value="@client.Number" />
+            <br /><b>Kod pocztowy: </b>
+            <input type="text" value="@client.PostCode" />
+            <br /><b>NIP: </b>
+            <input id="nipInput" type="text" @bind="@nip" />
+            <button class="btn btn-primary" @onclick="SearchByNip">Click me</button>
+        
+        </div>
+
+
+
+    }
+
+    <div id="productsDIV">
+        <div id="categorySelect">
+
+            <select name="categories" @onchange="SelectedCategoryChanged">
+                <option value="-1">-----</option>
+                @foreach (Category item in Categories)
+                {
+                    <option value="@item.Name">@item.Name</option>
+                }
+            </select>
+
+        </div>
+        <div id="a">
+            <label>
+                Wybierz prokt:<br />
+                <input type="text" name="aa" list="products" @bind="@selectedProduct" autocomplete="off" />
+                <datalist id="products">
+
+                    <label>
+                        or select one from he list:
+                        <select name="aa">
+                            @foreach (Product item in Products)
+                            {
+                                <option value="@item.Name" data-id="@item.ID" />
+                            }
+                        </select>
+                    </label>
+
+                </datalist>
+
+            </label>
+
+        </div>
+
+        <br />
+        <b>Ilość: </b> <input type="number" id="amountIn" @bind="@amount" />
+        <b> Cena netto:</b> <input type="number" id="priceNettoIn" @bind="@priceNetto" />
+        <button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Ilość</th>
+                    <th>J.M</th>
+                    <th>Cena</th>
+                    <th>Suma</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(ProductSell item in ProductsSell)
+                {
+                    <tr>
+                        <th>@item.Name</th>
+                        <th>@item.Amount</th>
+                        <th>@GetUnitName(item.UnitID)</th>
+                        <th>@item.PricePerItemNetto.ToString("N2") zł</th>
+                        <th>@((item.PricePerItemNetto*item.Amount).ToString("N2")) zł</th>
+                        <th><button class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th><b>Łącznie</b></th>
+                    <th><b>@(ProductsSell.Sum(s=>s.PricePerItemNetto*s.Amount).ToString("N2")) zł</b></th>
+                </tr>
+            </tfoot>
+        </table>
+
+
+    </div>
+
+</div>
+}
+
+
+    @code {
+        private List<Client> Clients { get; set; }
+        private List<Unit> Units { get; set; }
+        private List<Category> Categories { get; set; }
+        private List<Product> Products { get; set; }
+        private List<ProductSell> ProductsSell { get; set; }
+
+        private string selectedProduct { get; set; }
+        private string nip { get; set; }// = "8211022391";
+        private string a { get; set; }
+
+
+        private Client client { get; set; }
+        private Category category { get; set; }
+        private Product product { get; set; }
+        private Unit unit { get; set; }
+
+
+        private int amount { get; set; }
+        private double priceNetto { get; set; }
+        private int SelectedOption { get; set; }
+
+        const string _URL = "https://localhost:5001/api/";
+
+        protected override async Task OnInitializedAsync()
+        {
+            Clients = await Http.GetJsonAsync<List<Client>>(_URL + Controller.clients);
+            Units = await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
+            Categories = await Http.GetJsonAsync<List<Category>>(_URL + Controller.categories);
+            Products = new List<Product>();
+            ProductsSell = new List<ProductSell>();
+            a = "";
+            nip = string.Empty;
+            selectedProduct = string.Empty;
+        }
+
+        async Task SelectedClientChanged(ChangeEventArgs e)
+        {
+            client = Clients.Where(c => c.Name == e.Value.ToString()).First();
+            nip = client.NIP;
+            this.StateHasChanged();
+        }
+
+        async Task SelectedCategoryChanged(ChangeEventArgs e)
+        {
+            if(Categories.Any(c => c.Name == e.Value.ToString()))
+            {
+                category = Categories.Where(c => c.Name == e.Value.ToString()).First();
+
+                Products = await Http.GetJsonAsync<List<Product>>(_URL + Controller.products + "/bycategoryid/" + category.ID.ToString());
+
+                selectedProduct = string.Empty;
+
+                this.StateHasChanged();
+            }
+        }
+
+        async Task SelectedProductChanged(ChangeEventArgs e)
+        {
+            if((string)e.Value != "")
+            {
+                if(Products.Any(p=>p.Name == e.Value.ToString()))
+                {
+                    product = Products.Where(p => p.Name == e.Value.ToString()).First();
+                    unit = Units.Where(u => u.ID == product.UnitID).First();
+                }
+            }
+        }
+
+        async Task SearchByNip(KeyboardEventArgs e)
+        {
+            if (nip.Length > 9)
+            {
+                string temp = nip.Replace("-", "");
+                client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + temp);
+                //this.StateHasChanged();
+            }
+        }
+
+        async Task SearchByNip()
+        {
+            if (nip.Length > 9)
+            {
+                string temp = a.Replace("-", "");
+                client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + this.nip);
+                this.StateHasChanged();
+            }
+        }
+
+        async Task AddProductSell()
+        {
+            if(selectedProduct != string.Empty)
+            {
+                product = Products.Where(p => p.Name == selectedProduct).First();
+                unit = Units.Where(u => u.ID == product.UnitID).First();
+                ProductSell temp = new ProductSell();
+                temp.ProductID = product.ID;
+                temp.Name = product.Name;
+                temp.Amount = amount;
+                temp.PricePerItemNetto = priceNetto;
+                temp.TaxStageID = product.TaxStageID;
+                temp.UnitID = product.UnitID;
+
+                ProductsSell.Add(temp);
+                selectedProduct = string.Empty;
+                this.StateHasChanged();
+            } 
+        }
+
+        void DeleteProductSell(ProductSell x)
+        {
+            ProductsSell.Remove(x);
+            this.StateHasChanged();
+        }
+
+        async Task<string> GetUnit(Guid id)
+        {
+            Unit temp = await Http.GetJsonAsync<Unit>(_URL + Controller.units + "/byproductid/" + id.ToString());
+            return temp.Name;
+        }
+
+        string GetUnitName(Guid id)
+        {
+            foreach (Unit item in Units)
+            {
+                if (item.ID == id) return item.Name;
+            }
+            return "BŁĄD";
+        }
+
+        public enum Controller
+        {
+            categories,
+            clients,
+            products,
+            invoicesells,
+            units
+        }
+
+    }
