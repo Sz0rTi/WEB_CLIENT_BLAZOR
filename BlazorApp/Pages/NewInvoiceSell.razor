@@ -18,35 +18,45 @@ else
     @if (client == null)
     {
         <div id="clientInfo">
-            <b>Nazwa firmy: </b>
-            <label>
-                Wybierz firmę:<br />
-                <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" />
-                <datalist id="clients">
+            <EditForm Model="@ModelClientOut" OnInvalidSubmit="@HandleValidSubmit" OnValidSubmit="@HandleInvalidSubmit">
 
-                    <label>
-                        or select one from the list:
-                        <select name="clients">
-                            @foreach (Client item in Clients)
-                            {
-                                <option value="@item.Name" data-id="@item.ID" />
-                            }
-                        </select>
-                    </label>
+                <div class="alert @StatusClass">@StatusMessage</div>
 
-                </datalist>
+                <DataAnnotationsValidator />
 
-            </label>
 
-            <br /><b>Ulica: </b>
-            <input type="text" value="" />
-            <br /><b>Numer: </b>
-            <input type="text" value="" />
-            <br /><b>Kod pocztowy: </b>
-            <input type="text" value="" />
-            <br /><b>NIP: </b>
-            <input id=nipinput @bind="@nip" />
-            <button class="btn btn-primary" @onclick="SearchByNip">Click me</button>
+                <b>Nazwa firmy: </b>
+                <label>
+                    Wybierz firmę:<br />
+                    <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" />
+                    <datalist id="clients">
+
+                        <label>
+                            or select one from the list:
+                            <select name="clients">
+                                @foreach (Client item in Clients)
+                                {
+                                    <option value="@item.Name" data-id="@item.ID" />
+                                }
+                            </select>
+                        </label>
+
+                    </datalist>
+
+                </label>
+
+                <br /><b>Ulica: </b>
+                <InputText id="street" @bind-Value="@ModelClientOut.Street" />
+                <ValidationMessage For="@(() => ModelClientOut.Street)" />
+                <br /><b>Numer: </b>
+                <input type="text" value="" />
+                <br /><b>Kod pocztowy: </b>
+                <input type="text" value="" />
+                <br /><b>NIP: </b>
+                <input id=nipinput @bind="@nip" />
+                <button class="btn btn-primary" @onclick="SearchByNip">Click me</button>
+
+            </EditForm>
         </div>
 
     }
@@ -90,80 +100,89 @@ else
     }
 
     <div id="productsDIV">
-        <div id="categorySelect">
+        <EditForm Model="@ModelProductSell" OnValidSubmit="AddProductSell" >
 
-            <select name="categories" @onchange="SelectedCategoryChanged">
-                <option value="-1">-----</option>
-                @foreach (Category item in Categories)
-                {
-                    <option value="@item.Name">@item.Name</option>
-                }
-            </select>
+            <div class="alert @StatusClass">@StatusMessage</div>
 
-        </div>
-        <div id="a">
-            <label>
-                Wybierz prokt:<br />
-                <input type="text" name="aa" list="products" @bind="@selectedProduct" autocomplete="off" />
-                <datalist id="products">
+            <DataAnnotationsValidator/>
 
-                    <label>
-                        or select one from he list:
-                        <select name="aa">
-                            @foreach (Product item in Products)
-                            {
-                                <option value="@item.Name" data-id="@item.ID" />
-                            }
-                        </select>
-                    </label>
+            <div id="categorySelect">
 
-                </datalist>
+                <select name="categories" @onchange="SelectedCategoryChanged">
+                    <option value="-1">-----</option>
+                    @foreach (Category item in Categories)
+                    {
+                        <option value="@item.Name">@item.Name</option>
+                    }
+                </select>
 
-            </label>
+            </div>
+            <div id="a">
+                <label>
+                    Wybierz prokt:<br />
+                    <input type="text" name="aa" list="products" @bind="@selectedProduct" autocomplete="off" />
+                    <datalist id="products">
 
-        </div>
+                        <label>
+                            or select one from he list:
+                            <select name="aa">
+                                @foreach (Product item in Products)
+                                {
+                                    <option value="@item.Name" data-id="@item.ID" />
+                                }
+                            </select>
+                        </label>
 
-        <br />
-        <b>Ilość: </b> <input type="number" id="amountIn" @bind="@amount" />
-        <b> Cena netto:</b> <input type="number" id="priceNettoIn" @bind="@priceNetto" />
-        <button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>
+                    </datalist>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Nazwa</th>
-                    <th>Ilość</th>
-                    <th>J.M</th>
-                    <th>Cena</th>
-                    <th>Suma</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(ProductSell item in ProductsSell)
-                {
+                </label>
+
+            </div>
+
+            <br />
+            <b>Ilość: </b> <InputNumber id="amountIn" @bind-Value="@ModelProductSell.Amount" />
+            <ValidationMessage For="@(() => ModelProductSell.Amount)" />
+            <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="@ModelProductSell.PricePerItemNetto" />
+            <ValidationMessage For="@(() => ModelProductSell.PricePerItemNetto)" />
+            @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
+            <button type="submit">Dodaj</button>
+
+            <table>
+                <thead>
                     <tr>
-                        <th>@item.Name</th>
-                        <th>@item.Amount</th>
-                        <th>@GetUnitName(item.UnitID)</th>
-                        <th>@item.PricePerItemNetto.ToString("N2") zł</th>
-                        <th>@((item.PricePerItemNetto*item.Amount).ToString("N2")) zł</th>
-                        <th><button class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
+                        <th>Nazwa</th>
+                        <th>Ilość</th>
+                        <th>J.M</th>
+                        <th>Cena</th>
+                        <th>Suma</th>
+                        <th></th>
                     </tr>
-                }
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th><b>Łącznie</b></th>
-                    <th><b>@(ProductsSell.Sum(s=>s.PricePerItemNetto*s.Amount).ToString("N2")) zł</b></th>
-                </tr>
-            </tfoot>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (ProductSell item in ProductsSell)
+                    {
+                        <tr>
+                            <th>@item.Name</th>
+                            <th>@item.Amount</th>
+                            <th>@GetUnitName(item.UnitID)</th>
+                            <th>@item.PricePerItemNetto.ToString("N2") zł</th>
+                            <th>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</th>
+                            <th><button class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th><b>Łącznie</b></th>
+                        <th><b>@(ProductsSell.Sum(s => s.PricePerItemNetto * s.Amount).ToString("N2")) zł</b></th>
+                    </tr>
+                </tfoot>
+            </table>
 
-
+        </EditForm>
     </div>
 
 </div>
@@ -171,6 +190,24 @@ else
 
 
     @code {
+        private string StatusMessage;
+        private string StatusClass;
+
+
+        protected void HandleValidSubmit()
+        {
+            StatusClass = "alert-info";
+            StatusMessage = DateTime.Now + " Handle valid submit";
+        }
+
+        protected void HandleInvalidSubmit()
+        {
+            StatusClass = "alert-danger";
+            StatusMessage = DateTime.Now + " Handle invalid submit";
+        }
+
+
+
         private List<Client> Clients { get; set; }
         private List<Unit> Units { get; set; }
         private List<Category> Categories { get; set; }
@@ -187,6 +224,8 @@ else
         private Product product { get; set; }
         private Unit unit { get; set; }
 
+        private ClientOut ModelClientOut = new ClientOut();
+        private ProductSell ModelProductSell = new ProductSell();
 
         private int amount { get; set; }
         private double priceNetto { get; set; }
@@ -208,9 +247,13 @@ else
 
         async Task SelectedClientChanged(ChangeEventArgs e)
         {
-            client = Clients.Where(c => c.Name == e.Value.ToString()).First();
-            nip = client.NIP;
-            this.StateHasChanged();
+            if(Clients.Any(c => c.Name == e.Value.ToString()))
+            {
+                client = Clients.Where(c => c.Name == e.Value.ToString()).First();
+                //client = Clients.Where(c => c.Name == ModelClientOut.Name).First();
+                nip = client.NIP;
+                this.StateHasChanged();
+            }
         }
 
         async Task SelectedCategoryChanged(ChangeEventArgs e)
@@ -263,20 +306,23 @@ else
         {
             if(selectedProduct != string.Empty)
             {
-                product = Products.Where(p => p.Name == selectedProduct).First();
-                unit = Units.Where(u => u.ID == product.UnitID).First();
-                ProductSell temp = new ProductSell();
-                temp.ProductID = product.ID;
-                temp.Name = product.Name;
-                temp.Amount = amount;
-                temp.PricePerItemNetto = priceNetto;
-                temp.TaxStageID = product.TaxStageID;
-                temp.UnitID = product.UnitID;
+                //if(ModelProductSell.Amount != 0 && ModelProductSell.PricePerItemNetto !=0)
+                //{
+                    product = Products.Where(p => p.Name == selectedProduct).First();
+                    unit = Units.Where(u => u.ID == product.UnitID).First();
+                    ProductSell temp = new ProductSell();
+                    temp.ProductID = product.ID;
+                    temp.Name = product.Name;
+                    temp.Amount = ModelProductSell.Amount;
+                    temp.PricePerItemNetto = ModelProductSell.PricePerItemNetto;
+                    temp.TaxStageID = product.TaxStageID;
+                    temp.UnitID = product.UnitID;
 
-                ProductsSell.Add(temp);
-                selectedProduct = string.Empty;
-                this.StateHasChanged();
-            } 
+                    ProductsSell.Add(temp);
+                    selectedProduct = string.Empty;
+                    this.StateHasChanged();
+                //}
+            }
         }
 
         void DeleteProductSell(ProductSell x)
