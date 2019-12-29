@@ -11,9 +11,16 @@ a, .btn-link {
 table, th, td {
     border: 1px solid black;
     table-layout: fixed;
-    width: auto;
+    width: 100%;
     word-wrap: break-word;
 }
+
+    table.contact, table.contact tr, table.contact td {
+        border: 0px;
+        table-layout: fixed;
+        width: 100%;
+        word-wrap: break-word;
+    }
 
 .btn-primary {
   color: #fff;

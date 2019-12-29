@@ -161,10 +161,11 @@ else
             <ValidationMessage For="@(() => ModelProductBuy.Amount)" />
             <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="@ModelProductBuy.PricePerItemNetto" />
             <ValidationMessage For="@(() => ModelProductBuy.PricePerItemNetto)" />
+            
             @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
             <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj"/>
 
-            <table>
+            <table width="">
                 <thead>
                     <tr>
                         <th>Nazwa</th>
@@ -250,6 +251,7 @@ else
         private int amount { get; set; }
         private double priceNetto { get; set; }
         private int SelectedOption { get; set; }
+        
 
         const string _URL = "https://localhost:5001/api/";
 
@@ -383,16 +385,16 @@ else
                     else
                     {
                         product = Products.Where(p => p.Name == selectedProduct).First();
-                    unit = Units.Where(u => u.ID == product.UnitID).First();
+                        unit = Units.Where(u => u.ID == product.UnitID).First();
 
-                    temp.ProductID = product.ID;
-                    temp.Amount = ModelProductBuy.Amount;
-                    temp.PricePerItemNetto = ModelProductBuy.PricePerItemNetto;
-                    temp.TaxStageID = product.TaxStageID;
-                    temp.UnitID = product.UnitID;
+                        temp.ProductID = product.ID;
+                        temp.Amount = ModelProductBuy.Amount;
+                        temp.PricePerItemNetto = ModelProductBuy.PricePerItemNetto;
+                        temp.TaxStageID = product.TaxStageID;
+                        temp.UnitID = product.UnitID;
 
-                    
-                    //this.StateHasChanged();
+
+                        //this.StateHasChanged();
                     }
                     ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
                     ProductsBuy.Add(temp);
@@ -443,6 +445,7 @@ else
             }
         }
 
+        
 
 
 

@@ -117,11 +117,11 @@ else
     }
 
     <div id="productsDIV">
-        <EditForm Model="@ModelProductSell" OnValidSubmit="CreateInvoice" >
+        <EditForm Model="@ModelProductSell" OnValidSubmit="CreateInvoice">
 
             <div class="alert @StatusClass">@StatusMessage</div>
 
-            <DataAnnotationsValidator/>
+            <DataAnnotationsValidator />
 
             <div id="categorySelect">
 
@@ -159,19 +159,20 @@ else
             <br />
             <b>Ilość: </b> <InputNumber id="amountIn" @bind-Value="@ModelProductSell.Amount" />
             <ValidationMessage For="@(() => ModelProductSell.Amount)" />
-            <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="@ModelProductSell.PricePerItemNetto" />
+            <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="PriceNetto2" />
             <ValidationMessage For="@(() => ModelProductSell.PricePerItemNetto)" />
+            <b>Marża: </b> <InputNumber id="marginIn" @bind-Value="Margin2" />
             @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
-            <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj"/>
+            <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
 
             <table>
                 <thead>
                     <tr>
-                        <th>Nazwa</th>
-                        <th>Ilość</th>
-                        <th>J.M</th>
-                        <th>Cena</th>
-                        <th>Suma</th>
+                        <th><b>Nazwa</b></th>
+                        <th><b>Ilość</b></th>
+                        <th><b>J.M</b></th>
+                        <th><b>Cena</b></th>
+                        <th><b>Suma</b></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -179,7 +180,7 @@ else
                     @foreach (ProductSellOut item in ProductsSell)
                     {
                         <tr>
-                            <th>@ProductsOnList.Where(p=>p.ID == item.ProductID).First().Name</th>
+                            <th>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</th>
                             <th>@item.Amount</th>
                             <th>@GetUnitName(item.UnitID)</th>
                             <th>@item.PricePerItemNetto.ToString("N2") zł</th>
@@ -198,7 +199,7 @@ else
                     </tr>
                 </tfoot>
             </table>
-            <input type="submit" value="Stwórz"/>
+            <input type="submit" value="Stwórz" />
         </EditForm>
     </div>
         @*<button type="submit" @onclick="CreateInvoice">Stwórz</button>*@
@@ -250,6 +251,25 @@ else
         private int amount { get; set; }
         private double priceNetto { get; set; }
         private int SelectedOption { get; set; }
+        private double Margin;
+        public double Margin2
+        {
+            get { return Margin; }
+            set
+            {
+                Margin = value;
+                MarginChanged();
+            }
+        }
+        public double PriceNetto2
+        {
+            get { return ModelProductSell.PricePerItemNetto; }
+            set
+            {
+                ModelProductSell.PricePerItemNetto = value;
+                PriceChanged();
+            }
+        }
 
         const string _URL = "https://localhost:5001/api/";
 
@@ -408,6 +428,20 @@ else
 
                 InvoiceSell response = await Http.PostJsonAsync<InvoiceSell>(_URL + Controller.invoicesells, temp);
             }
+        }
+
+        void MarginChanged()
+        {
+            var temp = Products.Where(p => p.Name == selectedProduct).FirstOrDefault();
+            if(temp != null)
+            ModelProductSell.PricePerItemNetto = Math.Round(temp.PriceNetto * ((Margin + 100.0) / 100.0), 2);
+        }
+
+        void PriceChanged()
+        {
+            var temp = Products.Where(p => p.Name == selectedProduct).FirstOrDefault();
+            if(temp != null)
+            Margin = Math.Round(((ModelProductSell.PricePerItemNetto / temp.PriceNetto)*100.0)-100.0,1);
         }
 
 
