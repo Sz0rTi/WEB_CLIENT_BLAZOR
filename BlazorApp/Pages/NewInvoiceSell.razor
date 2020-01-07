@@ -1,8 +1,12 @@
 ﻿@page "/newinvoicesell"
+@attribute [Authorize]
+@inject NavigationManager NavigationManager
 @using Models
 @using Models.Out
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@using Newtonsoft.Json
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
 
 
 <h3>NewInvoiceSellModel</h3>
@@ -14,447 +18,472 @@
 else
 {
 
-<div id="main">
-    @if (client == null)
-    {
-        <div id="clientInfo">
-            <EditForm Model="@ModelClientOut">
+    <div id="main">
+        @if (client == null)
+        {
+            <div id="clientInfo">
+                <EditForm Model="@ModelClientOut">
+                    <div class="alert @StatusClass">@StatusMessage</div>
+                    <DataAnnotationsValidator />
+                    <b>Nazwa firmy: </b>
+                    <label>
+                        <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" />
+                        <datalist id="clients">
+                            <label>
+                                or select one from the list:
+                                <select name="clients">
+                                    @foreach (Client item in Clients)
+                                    {
+                                        <option value="@item.Name" data-id="@item.ID" />
+                                    }
+                                </select>
+                            </label>
+                        </datalist>
+                    </label>
+                    <br /><b>Ulica: </b>
+                    <InputText id="street" @bind-Value="@ModelClientOut.Street" />
+                    <ValidationMessage For="@(() => ModelClientOut.Street)" />
+                    <br /><b>Numer: </b>
+                    <InputText id="number" @bind-Value="@ModelClientOut.Number" />
+                    <ValidationMessage For="@(() => ModelClientOut.Number)" />
+                    <br /><b>Kod pocztowy: </b>
+                    <InputText id="postcode" @bind-Value="@ModelClientOut.PostCode" />
+                    <ValidationMessage For="@(() => ModelClientOut.PostCode)" />
+                    <br /><b>NIP: </b>
+                    <InputText id="nipIT" @bind-Value="@ModelClientOut.NIP" />
+                    <ValidationMessage For="@(() => ModelClientOut.NIP)" />
+                    <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
+
+                </EditForm>
+            </div>
+
+        }
+        else
+        {
+            <div id="clientInfo">
+                <EditForm Model="@ModelClientOut">
+
+                    <div class="alert @StatusClass">@StatusMessage</div>
+
+                    <DataAnnotationsValidator />
+
+                    <table class="contact">
+                        <tr>
+                            <td>Nazwa firmy: </td>
+                            <td>
+                                <label class="contact">
+                                    <input class="contact" type="text" name="client" list="clients" @onchange="SelectedClientChanged" value="@ModelClientOut.Name" />
+                                    <datalist id="clients">
+
+                                        <label>
+                                            or select one from the list:
+                                            <select name="clients">
+                                                @foreach (Client item in Clients)
+                                                {
+                                                    <option value="@item.Name" data-id="@item.ID" />
+                                                }
+                                            </select>
+                                        </label>
+
+                                    </datalist>
+
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Ulica: </td>
+                            <td><InputText class="contact" id="street" @bind-Value="@ModelClientOut.Street" /></td>
+                        </tr>
+                        <tr>
+                            <td>Numer:</td>
+                            <td><InputText class="contact" id="number" @bind-Value="@ModelClientOut.Number" /></td>
+                        </tr>
+                        <tr>
+                            <td>Kod pocztowy: </td>
+                            <td><InputText class="contact" id="postcode" @bind-Value="@ModelClientOut.PostCode" /></td>
+                        </tr>
+                        <tr>
+                            <td>NIP: </td>
+                            <td><InputText class="contact" id="nipIT" @bind-Value="@ModelClientOut.NIP" /></td>
+                        </tr>
+                    </table>
+
+
+                    @*<br /><b>Ulica: </b>
+                        <InputText id="street" @bind-Value="@ModelClientOut.Street" />
+                        <ValidationMessage For="@(() => ModelClientOut.Street)" />
+                        <br /><b>Numer: </b>
+                        <InputText id="number" @bind-Value="@ModelClientOut.Number" />
+                        <ValidationMessage For="@(() => ModelClientOut.Number)" />
+                        <br /><b>Kod pocztowy: </b>
+                        <InputText id="postcode" @bind-Value="@ModelClientOut.PostCode" />
+                        <ValidationMessage For="@(() => ModelClientOut.PostCode)" />
+                        <br /><b>NIP: </b>
+                        <InputText id="nipIT" @bind-Value="@ModelClientOut.NIP" />
+                        <ValidationMessage For="@(() => ModelClientOut.NIP)" />*@
+                    <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
+
+                </EditForm>
+            </div>
+
+
+
+        }
+
+        <div id="productsDIV">
+            <EditForm Model="@ModelProductSell" OnValidSubmit="CreateInvoice">
 
                 <div class="alert @StatusClass">@StatusMessage</div>
 
                 <DataAnnotationsValidator />
 
+                <div id="categorySelect">
 
-                <b>Nazwa firmy: </b>
-                <label>
-                    Wybierz firmę:<br />
-                    <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" />
-                    <datalist id="clients">
-
-                        <label>
-                            or select one from the list:
-                            <select name="clients">
-                                @foreach (Client item in Clients)
-                                {
-                                    <option value="@item.Name" data-id="@item.ID" />
-                                }
-                            </select>
-                        </label>
-
-                    </datalist>
-
-                </label>
-
-                <br /><b>Ulica: </b>
-                <InputText id="street" @bind-Value="@ModelClientOut.Street" />
-                <ValidationMessage For="@(() => ModelClientOut.Street)" />
-                <br /><b>Numer: </b>
-                <InputText id="number" @bind-Value="@ModelClientOut.Number" />
-                <ValidationMessage For="@(() => ModelClientOut.Number)" />
-                <br /><b>Kod pocztowy: </b>
-                <InputText id="postcode" @bind-Value="@ModelClientOut.PostCode" />
-                <ValidationMessage For="@(() => ModelClientOut.PostCode)" />
-                <br /><b>NIP: </b>
-                @*<input id=nipinput @bind="@nip" />*@
-                <InputText id="nipIT" @bind-Value="@ModelClientOut.NIP" />
-                <ValidationMessage For="@(() => ModelClientOut.NIP)" />
-                <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
-
-            </EditForm>
-        </div>
-
-    }
-    else
-    {
-<div id="clientInfo">
-    <EditForm Model="@ModelClientOut">
-
-        <div class="alert @StatusClass">@StatusMessage</div>
-
-        <DataAnnotationsValidator />
-
-
-        <b>Nazwa firmy: </b>
-        <label>
-            Wybierz firmę:<br />
-            <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" value="@ModelClientOut.Name"/>
-            <datalist id="clients">
-
-                <label>
-                    or select one from the list:
-                    <select name="clients">
-                        @foreach (Client item in Clients)
+                    <select name="categories" @onchange="SelectedCategoryChanged">
+                        <option value="-1">-----</option>
+                        @foreach (Category item in Categories)
                         {
-                            <option value="@item.Name" data-id="@item.ID" />
+                            <option value="@item.Name">@item.Name</option>
                         }
                     </select>
-                </label>
 
-            </datalist>
+                </div>
+                <div id="a">
+                    <label>
+                        Wybierz produkt:<br />
+                        <input type="text" name="aa" list="products" @bind="@selectedProduct" autocomplete="off" />
+                        <datalist id="products">
 
-        </label>
+                            <label>
+                                or select one from he list:
+                                <select name="aa">
+                                    @foreach (Product item in Products)
+                                    {
+                                        <option value="@item.Name" data-id="@item.ID" />
+                                    }
+                                </select>
+                            </label>
 
-        <br /><b>Ulica: </b>
-        <InputText id="street" @bind-Value="@ModelClientOut.Street" />
-        <ValidationMessage For="@(() => ModelClientOut.Street)" />
-        <br /><b>Numer: </b>
-        <InputText id="number" @bind-Value="@ModelClientOut.Number" />
-        <ValidationMessage For="@(() => ModelClientOut.Number)" />
-        <br /><b>Kod pocztowy: </b>
-        <InputText id="postcode" @bind-Value="@ModelClientOut.PostCode" />
-        <ValidationMessage For="@(() => ModelClientOut.PostCode)" />
-        <br /><b>NIP: </b>
-        @*<input id=nipinput @bind="@nip" />*@
-        <InputText id="nipIT" @bind-Value="@ModelClientOut.NIP" />
-        <ValidationMessage For="@(() => ModelClientOut.NIP)" />
-        <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
+                        </datalist>
 
-    </EditForm>
-</div>
+                    </label>
 
+                </div>
 
+                <br />
+                <b>Ilość: </b> <InputNumber id="amountIn" @bind-Value="@ModelProductSell.Amount" />
+                <ValidationMessage For="@(() => ModelProductSell.Amount)" />
+                <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="PriceNetto2" />
+                <ValidationMessage For="@(() => ModelProductSell.PricePerItemNetto)" />
+                <b>Marża: </b> <InputNumber id="marginIn" @bind-Value="Margin2" />
+                @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
+                <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
 
-    }
-
-    <div id="productsDIV">
-        <EditForm Model="@ModelProductSell" OnValidSubmit="CreateInvoice">
-
-            <div class="alert @StatusClass">@StatusMessage</div>
-
-            <DataAnnotationsValidator />
-
-            <div id="categorySelect">
-
-                <select name="categories" @onchange="SelectedCategoryChanged">
-                    <option value="-1">-----</option>
-                    @foreach (Category item in Categories)
-                    {
-                        <option value="@item.Name">@item.Name</option>
-                    }
-                </select>
-
-            </div>
-            <div id="a">
-                <label>
-                    Wybierz produkt:<br />
-                    <input type="text" name="aa" list="products" @bind="@selectedProduct" autocomplete="off" />
-                    <datalist id="products">
-
-                        <label>
-                            or select one from he list:
-                            <select name="aa">
-                                @foreach (Product item in Products)
-                                {
-                                    <option value="@item.Name" data-id="@item.ID" />
-                                }
-                            </select>
-                        </label>
-
-                    </datalist>
-
-                </label>
-
-            </div>
-
-            <br />
-            <b>Ilość: </b> <InputNumber id="amountIn" @bind-Value="@ModelProductSell.Amount" />
-            <ValidationMessage For="@(() => ModelProductSell.Amount)" />
-            <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="PriceNetto2" />
-            <ValidationMessage For="@(() => ModelProductSell.PricePerItemNetto)" />
-            <b>Marża: </b> <InputNumber id="marginIn" @bind-Value="Margin2" />
-            @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
-            <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
-
-            <table>
-                <thead>
-                    <tr>
-                        <th><b>Nazwa</b></th>
-                        <th><b>Ilość</b></th>
-                        <th><b>J.M</b></th>
-                        <th><b>Cena</b></th>
-                        <th><b>Suma</b></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (ProductSellOut item in ProductsSell)
-                    {
+                <table>
+                    <thead>
                         <tr>
-                            <th>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</th>
-                            <th>@item.Amount</th>
-                            <th>@GetUnitName(item.UnitID)</th>
-                            <th>@item.PricePerItemNetto.ToString("N2") zł</th>
-                            <th>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</th>
-                            <th><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
+                            <td><b>Nazwa</b></td>
+                            <td><b>Ilość</b></td>
+                            <td><b>J.M</b></td>
+                            <td><b>Cena</b></td>
+                            <td><b>Suma</b></td>
+                            <td></td>
                         </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th><b>Łącznie</b></th>
-                        <th><b>@(ProductsSell.Sum(s => s.PricePerItemNetto * s.Amount).ToString("N2")) zł</b></th>
-                    </tr>
-                </tfoot>
-            </table>
-            <input type="submit" value="Stwórz" />
-        </EditForm>
-    </div>
+                    </thead>
+                    <tbody>
+                        @foreach (ProductSellOut item in ProductsSell)
+                        {
+                            <tr>
+                                <td>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</td>
+                                <td>@item.Amount</td>
+                                <td>@GetUnitName(item.UnitID)</td>
+                                <td>@item.PricePerItemNetto.ToString("N2") zł</td>
+                                <td>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</td>
+                                <td><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><b>Łącznie</b></td>
+                            <td><b>@(ProductsSell.Sum(s => s.PricePerItemNetto * s.Amount).ToString("N2")) zł</b></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <input type="submit" value="Stwórz" />
+            </EditForm>
+        </div>
         @*<button type="submit" @onclick="CreateInvoice">Stwórz</button>*@
-       
 
-</div>
+
+    </div>
 }
 
 
-    @code {
-        private string StatusMessage;
-        private string StatusClass;
+@code {
+    private string StatusMessage;
+    private string StatusClass;
 
 
-        protected void HandleValidSubmit()
+    protected void HandleValidSubmit()
+    {
+        StatusClass = "alert-info";
+        StatusMessage = DateTime.Now + " Handle valid submit";
+    }
+
+    protected void HandleInvalidSubmit()
+    {
+        StatusClass = "alert-danger";
+        StatusMessage = DateTime.Now + " Handle invalid submit";
+    }
+
+
+
+    private List<Client> Clients { get; set; }
+    private List<Unit> Units { get; set; }
+    private List<Category> Categories { get; set; }
+    private List<Product> Products { get; set; }
+    private List<ProductSellOut> ProductsSell { get; set; }
+    private List<ProductOnList> ProductsOnList { get; set; }
+
+    private string selectedProduct { get; set; }
+    private string nip { get; set; }// = "8211022391";
+    private string a { get; set; }
+
+
+    private Client client { get; set; }
+    private Category category { get; set; }
+    private Product product { get; set; }
+    private Unit unit { get; set; }
+
+    private ClientOut ModelClientOut = new ClientOut();
+    private ProductSell ModelProductSell = new ProductSell();
+    [CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
+    private int amount { get; set; }
+    private double priceNetto { get; set; }
+    private int SelectedOption { get; set; }
+    private double Margin;
+    public double Margin2
+    {
+        get { return Margin; }
+        set
         {
-            StatusClass = "alert-info";
-            StatusMessage = DateTime.Now + " Handle valid submit";
+            Margin = value;
+            MarginChanged();
         }
-
-        protected void HandleInvalidSubmit()
+    }
+    public double PriceNetto2
+    {
+        get { return ModelProductSell.PricePerItemNetto; }
+        set
         {
-            StatusClass = "alert-danger";
-            StatusMessage = DateTime.Now + " Handle invalid submit";
+            ModelProductSell.PricePerItemNetto = value;
+            PriceChanged();
         }
+    }
 
+    const string _URL = "https://localhost:5001/api/";
 
+    protected override async Task OnInitializedAsync()
+    {
+        Clients = await Http.GetJsonAsync<List<Client>>(_URL + Controller.clients);
+        var user = (await authenticationStateTask).User;
+        //TU KURWA
+        var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", savedToken);
+        var unitsResult = await Http.GetAsync(_URL + Controller.units);
+        if (unitsResult.IsSuccessStatusCode)
 
-        private List<Client> Clients { get; set; }
-        private List<Unit> Units { get; set; }
-        private List<Category> Categories { get; set; }
-        private List<Product> Products { get; set; }
-        private List<ProductSellOut> ProductsSell { get; set; }
-        private List<ProductOnList> ProductsOnList { get; set; }
+            Units = JsonConvert.DeserializeObject<List<Unit>>(await unitsResult.Content.ReadAsStringAsync());
+        else NavigationManager.NavigateTo("/Identity/Account/Login");
+        await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
+        Categories = await Http.GetJsonAsync<List<Category>>(_URL + Controller.categories);
+        client = new Client();
+        ModelClientOut = new ClientOut();
+        Products = new List<Product>();
+        ProductsSell = new List<ProductSellOut>();
+        ProductsOnList = new List<ProductOnList>();
+        a = "";
+        nip = string.Empty;
+        selectedProduct = string.Empty;
+    }
 
-        private string selectedProduct { get; set; }
-        private string nip { get; set; }// = "8211022391";
-        private string a { get; set; }
-
-
-        private Client client { get; set; }
-        private Category category { get; set; }
-        private Product product { get; set; }
-        private Unit unit { get; set; }
-
-        private ClientOut ModelClientOut = new ClientOut();
-        private ProductSell ModelProductSell = new ProductSell();
-
-        private int amount { get; set; }
-        private double priceNetto { get; set; }
-        private int SelectedOption { get; set; }
-        private double Margin;
-        public double Margin2
+    async Task SelectedClientChanged(ChangeEventArgs e)
+    {
+        if (Clients.Any(c => c.Name == e.Value.ToString()))
         {
-            get { return Margin; }
-            set
-            {
-                Margin = value;
-                MarginChanged();
-            }
+            client = Clients.Where(c => c.Name == e.Value.ToString()).First();
+            nip = client.NIP;
+            ModelClientOut.Name = client.Name;
+            ModelClientOut.Street = client.Street;
+            ModelClientOut.City = client.City;
+            ModelClientOut.Number = client.Number;
+            ModelClientOut.PostCode = client.PostCode;
+            ModelClientOut.NIP = client.NIP;
         }
-        public double PriceNetto2
-        {
-            get { return ModelProductSell.PricePerItemNetto; }
-            set
-            {
-                ModelProductSell.PricePerItemNetto = value;
-                PriceChanged();
-            }
-        }
+    }
 
-        const string _URL = "https://localhost:5001/api/";
-
-        protected override async Task OnInitializedAsync()
+    async Task SelectedCategoryChanged(ChangeEventArgs e)
+    {
+        if (Categories.Any(c => c.Name == e.Value.ToString()))
         {
-            Clients = await Http.GetJsonAsync<List<Client>>(_URL + Controller.clients);
-            Units = await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
-            Categories = await Http.GetJsonAsync<List<Category>>(_URL + Controller.categories);
-            client = new Client();
-            ModelClientOut = new ClientOut();
-            Products = new List<Product>();
-            ProductsSell = new List<ProductSellOut>();
-            ProductsOnList = new List<ProductOnList>();
-            a = "";
-            nip = string.Empty;
             selectedProduct = string.Empty;
-        }
-
-        async Task SelectedClientChanged(ChangeEventArgs e)
-        {
-            if(Clients.Any(c => c.Name == e.Value.ToString()))
-            {
-                client = Clients.Where(c => c.Name == e.Value.ToString()).First();
-                //client = Clients.Where(c => c.Name == ModelClientOut.Name).First();
-                nip = client.NIP;
-                ModelClientOut.Name = client.Name;
-                //e.Value = client.Name;
-                ModelClientOut.Street = client.Street;
-                ModelClientOut.City = client.City;
-                ModelClientOut.Number = client.Number;
-                ModelClientOut.PostCode = client.PostCode;
-                ModelClientOut.NIP = client.NIP;
-                //this.StateHasChanged();
-            }
-        }
-
-        async Task SelectedCategoryChanged(ChangeEventArgs e)
-        {
-            if(Categories.Any(c => c.Name == e.Value.ToString()))
-            {
-                selectedProduct = string.Empty;
-                category = Categories.Where(c => c.Name == e.Value.ToString()).First();
+            category = Categories.Where(c => c.Name == e.Value.ToString()).First();
 
 
 
-                Products = await Http.GetJsonAsync<List<Product>>(_URL + Controller.products + "/bycategoryid/" + category.ID.ToString());
+            Products = await Http.GetJsonAsync<List<Product>>(_URL + Controller.products + "/bycategoryid/" + category.ID.ToString());
 
-                //selectedProduct = string.Empty;
+            //selectedProduct = string.Empty;
 
-                //this.StateHasChanged();
-            }
-        }
-
-        async Task SelectedProductChanged(ChangeEventArgs e)
-        {
-            if((string)e.Value != "")
-            {
-                if(Products.Any(p=>p.Name == e.Value.ToString()))
-                {
-                    product = Products.Where(p => p.Name == e.Value.ToString()).First();
-                    unit = Units.Where(u => u.ID == product.UnitID).First();
-                    selectedProduct = product.Name;
-                }
-            }
-        }
-
-        async Task SearchByNip(KeyboardEventArgs e)
-        {
-            if (ModelClientOut.NIP.Length > 9)
-            {
-                string temp = ModelClientOut.NIP.Replace("-", "");
-                client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + temp);
-                //this.StateHasChanged();
-            }
-        }
-
-        async Task SearchByNip()
-        {
-            if (ModelClientOut.NIP.Length > 9)
-            {
-                string temp = a.Replace("-", "");
-                nip = ModelClientOut.NIP;
-                //ModelClientOut = new ClientOut();
-                //client = new Client();
-                client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + nip);
-                ModelClientOut.Name = client.Name;
-                ModelClientOut.Street = client.Street;
-                ModelClientOut.City = client.City;
-                ModelClientOut.Number = client.Number;
-                ModelClientOut.PostCode = client.PostCode;
-                ModelClientOut.NIP = client.NIP;
-                //this.StateHasChanged();
-            }
-        }
-
-        async Task AddProductSell()
-        {
-            if(selectedProduct != string.Empty)
-            {
-                //if(ModelProductSell.Amount != 0 && ModelProductSell.PricePerItemNetto !=0)
-                //{
-                product = Products.Where(p => p.Name == selectedProduct).First();
-                unit = Units.Where(u => u.ID == product.UnitID).First();
-                ProductSellOut temp = new ProductSellOut();
-                temp.ProductID = product.ID;
-                temp.Amount = ModelProductSell.Amount;
-                temp.PricePerItemNetto = ModelProductSell.PricePerItemNetto;
-                temp.TaxStageID = product.TaxStageID;
-                temp.UnitID = product.UnitID;
-
-                ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
-                ProductsSell.Add(temp);
-                selectedProduct = string.Empty;
-                //this.StateHasChanged();
-                //}
-            }
-        }
-
-        void DeleteProductSell(ProductSellOut x)
-        {
-            ProductsOnList.Remove(ProductsOnList.Where(p => p.ID == x.ProductID).First());
-            ProductsSell.Remove(x);
             //this.StateHasChanged();
         }
-
-        async Task<string> GetUnit(Guid id)
-        {
-            Unit temp = await Http.GetJsonAsync<Unit>(_URL + Controller.units + "/byproductid/" + id.ToString());
-            return temp.Name;
-        }
-
-        string GetUnitName(Guid id)
-        {
-            foreach (Unit item in Units)
-            {
-                if (item.ID == id) return item.Name;
-            }
-            return "BŁĄD";
-        }
-
-        async Task CreateInvoice()
-        {
-            if(ModelClientOut != null && ModelProductSell != null && ProductsSell.Count > 0)
-            {
-                InvoiceSellOut temp = new InvoiceSellOut();
-                if (Clients.Any(c => c.NIP == ModelClientOut.NIP)) temp.ClientId = Clients.Where(c => c.NIP == ModelClientOut.NIP).First().ID;
-                else
-                {
-                    Client clientTemp = await Http.PostJsonAsync<Client>(_URL + Controller.clients, ModelClientOut);
-                    temp.ClientId = clientTemp.ID;
-                }
-                temp.IsPaid = false;
-                temp.PaymentDeadline = DateTime.Now;
-                temp.PriceNetto = ProductsSell.Sum(p => p.Amount * p.PricePerItemNetto);
-                temp.ProductsSell = ProductsSell;
-
-                InvoiceSell response = await Http.PostJsonAsync<InvoiceSell>(_URL + Controller.invoicesells, temp);
-            }
-        }
-
-        void MarginChanged()
-        {
-            var temp = Products.Where(p => p.Name == selectedProduct).FirstOrDefault();
-            if(temp != null)
-            ModelProductSell.PricePerItemNetto = Math.Round(temp.PriceNetto * ((Margin + 100.0) / 100.0), 2);
-        }
-
-        void PriceChanged()
-        {
-            var temp = Products.Where(p => p.Name == selectedProduct).FirstOrDefault();
-            if(temp != null)
-            Margin = Math.Round(((ModelProductSell.PricePerItemNetto / temp.PriceNetto)*100.0)-100.0,1);
-        }
-
-
-
-
-        public enum Controller
-        {
-            categories,
-            clients,
-            products,
-            invoicesells,
-            invoicebuys,
-            units
-        }
-
     }
+
+    async Task SelectedProductChanged(ChangeEventArgs e)
+    {
+        if ((string)e.Value != "")
+        {
+            if (Products.Any(p => p.Name == e.Value.ToString()))
+            {
+                product = Products.Where(p => p.Name == e.Value.ToString()).First();
+                unit = Units.Where(u => u.ID == product.UnitID).First();
+                selectedProduct = product.Name;
+            }
+        }
+    }
+
+    async Task SearchByNip(KeyboardEventArgs e)
+    {
+        if (ModelClientOut.NIP.Length > 9)
+        {
+            string temp = ModelClientOut.NIP.Replace("-", "");
+            client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + temp);
+            //this.StateHasChanged();
+        }
+    }
+
+    async Task SearchByNip()
+    {
+        if (ModelClientOut.NIP.Length > 9)
+        {
+            string temp = a.Replace("-", "");
+            nip = ModelClientOut.NIP;
+            //ModelClientOut = new ClientOut();
+            //client = new Client();
+            client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + nip);
+            ModelClientOut.Name = client.Name;
+            ModelClientOut.Street = client.Street;
+            ModelClientOut.City = client.City;
+            ModelClientOut.Number = client.Number;
+            ModelClientOut.PostCode = client.PostCode;
+            ModelClientOut.NIP = client.NIP;
+            //this.StateHasChanged();
+        }
+    }
+
+    async Task AddProductSell()
+    {
+        if (selectedProduct != string.Empty)
+        {
+            //if(ModelProductSell.Amount != 0 && ModelProductSell.PricePerItemNetto !=0)
+            //{
+            product = Products.Where(p => p.Name == selectedProduct).First();
+            unit = Units.Where(u => u.ID == product.UnitID).First();
+            var taxstage = await Http.GetJsonAsync<TaxStage>(_URL + Controller.taxstages + "/" + product.TaxStageID.ToString());
+            ProductSellOut temp = new ProductSellOut();
+            temp.ProductID = product.ID;
+            temp.Amount = ModelProductSell.Amount;
+            temp.PricePerItemNetto = ModelProductSell.PricePerItemNetto;
+            temp.PricePerItemBrutto = ModelProductSell.PricePerItemNetto * (1.0 + taxstage.Stage / 100.0);
+            temp.TaxStageID = product.TaxStageID;
+            temp.UnitID = product.UnitID;
+            temp.BasePriceNetto = product.PriceNetto;
+
+            ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
+            ProductsSell.Add(temp);
+            selectedProduct = string.Empty;
+            //this.StateHasChanged();
+            //}
+        }
+    }
+
+    void DeleteProductSell(ProductSellOut x)
+    {
+        ProductsOnList.Remove(ProductsOnList.Where(p => p.ID == x.ProductID).First());
+        ProductsSell.Remove(x);
+        //this.StateHasChanged();
+    }
+
+    async Task<string> GetUnit(Guid id)
+    {
+        Unit temp = await Http.GetJsonAsync<Unit>(_URL + Controller.units + "/byproductid/" + id.ToString());
+        return temp.Name;
+    }
+
+    string GetUnitName(Guid id)
+    {
+        foreach (Unit item in Units)
+        {
+            if (item.ID == id) return item.Name;
+        }
+        return "BŁĄD";
+    }
+
+    async Task CreateInvoice()
+    {
+        if (ModelClientOut != null && ModelProductSell != null && ProductsSell.Count > 0)
+        {
+            InvoiceSellOut temp = new InvoiceSellOut();
+            if (Clients.Any(c => c.NIP == ModelClientOut.NIP)) temp.ClientId = Clients.Where(c => c.NIP == ModelClientOut.NIP).First().ID;
+            else
+            {
+                Client clientTemp = await Http.PostJsonAsync<Client>(_URL + Controller.clients, ModelClientOut);
+                temp.ClientId = clientTemp.ID;
+            }
+            temp.IsPaid = false;
+            temp.PaymentDeadline = DateTime.Now;
+            temp.PriceNetto = ProductsSell.Sum(p => p.Amount * p.PricePerItemNetto);
+            temp.ProductsSell = ProductsSell;
+            temp.PriceBrutto = 0.0;
+            foreach (var item in ProductsSell)
+            {
+                temp.PriceBrutto += item.PricePerItemBrutto * item.Amount;
+            }
+            InvoiceSell response = await Http.PostJsonAsync<InvoiceSell>(_URL + Controller.invoicesells, temp);
+            NavigationManager.NavigateTo("/newinvoicesell");
+        }
+    }
+
+    void MarginChanged()
+    {
+        var temp = Products.Where(p => p.Name == selectedProduct).FirstOrDefault();
+        if (temp != null)
+            ModelProductSell.PricePerItemNetto = Math.Round(temp.PriceNetto * ((Margin + 100.0) / 100.0), 2);
+    }
+
+    void PriceChanged()
+    {
+        var temp = Products.Where(p => p.Name == selectedProduct).FirstOrDefault();
+        if (temp != null)
+            Margin = Math.Round(((ModelProductSell.PricePerItemNetto / temp.PriceNetto) * 100.0) - 100.0, 1);
+    }
+
+
+
+
+    /*public enum Controller
+    {
+        categories,
+        clients,
+        products,
+        invoicesells,
+        invoicebuys,
+        units,
+        taxstages
+    }*/
+
+}

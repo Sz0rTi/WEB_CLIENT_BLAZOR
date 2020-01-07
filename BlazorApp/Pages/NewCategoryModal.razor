@@ -1,0 +1,50 @@
+﻿@page "/newcategory"
+@attribute [Authorize]
+@inject HttpClient Http
+@using Models
+@using Models.Out
+@inject NavigationManager NavigationManager
+
+<h3>NewCategoryModal</h3>
+@if (Status == 0)
+{
+    <h3>Kategoria o nazwie @Name już istnieje!</h3>
+}
+else if (Status == 1)
+{
+    <h3>Dodano kategorię o nazwie @Name!</h3>
+}
+<form @onsubmit="CreateCategory">
+    <p>Nazwa kategorii: </p>
+    <input type="text" @bind="Name" />
+    <br />
+    <button type="submit">Stwórz</button>
+</form>
+
+@code {
+    private string Name { get; set; }
+    private Category responseCategory { get; set; }
+    const string _URL = "https://localhost:5001/api/";
+    private short Status { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Status = -1;
+    }
+
+    async void CreateCategory()
+    {
+        if (Name != "")
+            responseCategory = await Http.PostJsonAsync<Category>(_URL + Controller.categories, new CategoryOut { Name = Name });
+        if (responseCategory != null)
+        {
+            Status = 1;
+            NavigationManager.NavigateTo("/newinvoicebuy");
+        }
+        else
+        {
+            Status = 0;
+            Name = "";
+        }
+    }
+}

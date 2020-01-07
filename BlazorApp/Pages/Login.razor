@@ -1,0 +1,57 @@
+﻿@page "/login"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@using Newtonsoft.Json
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
+@using Models
+@inject IAuthorizationService AuthorizationService
+@inject IAuthService _service
+@inject NavigationManager NavigationManager
+
+<h3>Login</h3>
+
+@if (!Status)
+{
+    <h3 style="color:red">@Error</h3>
+}
+<form @onsubmit="LogIn">
+    <input type="text" @bind="login" />
+    <br />
+    <input type="password" @bind="password" />
+    <button type="submit" @onclick="LogIn">JP</button>
+</form>
+
+<br />
+<br />
+<button type="submit" @onclick="_service.Logout">WYLOGUJKURWO</button>
+
+@code {
+    [CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
+    private string login { get; set; }
+    private string password { get; set; }
+    const string _URL = "https://localhost:5001/api/";
+    private bool Status { get; set; }
+    private string Error { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Status = true;
+    }
+
+    async void LogIn()
+    {
+        LoginModel loginModel = new LoginModel { Email = login, Password = password };
+        var result = await _service.Login(loginModel);
+        if (result.Successful)
+        {
+            Status = true;
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            Status = false;
+            Error = result.Error;
+            StateHasChanged();
+        }
+    }
+}

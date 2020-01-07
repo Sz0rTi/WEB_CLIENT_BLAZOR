@@ -8,6 +8,14 @@ a, .btn-link {
     color: #0366d6;
 }
 
+input.contact{
+    width:100%;
+}
+
+label.contact{
+    width:100%;
+}
+
 table, th, td {
     border: 1px solid black;
     table-layout: fixed;
@@ -15,18 +23,24 @@ table, th, td {
     word-wrap: break-word;
 }
 
-    table.contact, table.contact tr, table.contact td {
-        border: 0px;
-        table-layout: fixed;
-        width: 100%;
-        word-wrap: break-word;
+table.contact {
+    border: 1px solid black;
+    table-layout: fixed;
+    width: 50%;
+    word-wrap: break-word;
+}
+    table.contact th{
+        width:auto;
+    }
+    table.contact td {
+        width: 50%;
     }
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-}
+    .btn-primary {
+        color: #fff;
+        background-color: #1b6ec2;
+        border-color: #1861ac;
+    }
 
 app {
     position: relative;
