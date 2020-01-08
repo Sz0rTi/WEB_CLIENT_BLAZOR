@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BlazorApp.Models.Out
 {
-    public class ClientOut
+    public class SellerOut
     {
         [Required]
         [MinLength(1)]

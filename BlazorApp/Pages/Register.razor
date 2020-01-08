@@ -1,0 +1,34 @@
+﻿@page "/register"
+@using Models
+@inject IAuthService _service
+@inject NavigationManager NavigationManager
+
+<h3>Register</h3>
+
+<form @onsubmit="RegisterMethod">
+    <p>Email: </p>
+    <input type="text" @bind="Email" /><br />
+    <p>Hasło: </p>
+    <input type="password" @bind="Password" /><br />
+    <p>Powtórz hasło: </p>
+    <input type="password" @bind="ConfirmedPassword" />
+    <button type="submit">Stwórz</button>
+
+</form>
+
+@code {
+    private string Email { get; set; }
+    private string Password { get; set; }
+    private string ConfirmedPassword { get; set; }
+
+
+    async void RegisterMethod()
+    {
+        RegisterModel model = new RegisterModel { Email = Email, Password = Password, ConfirmPassword = ConfirmedPassword };
+        RegisterResult result = await _service.Register(model);
+        if (result.Successful)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}

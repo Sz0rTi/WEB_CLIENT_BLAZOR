@@ -1,19 +1,20 @@
-﻿using System;
+﻿using BlazorApp.Models;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorApp.Models.Out
+namespace BlazorApp.Models
 {
-    public class InvoiceSellOut
+    public class InvoiceSell
     {
-        [Required]
-        public Guid ClientId { get; set; }
+        public Guid ID { get; set; }
+        public DateTime Date { get; set; }
+        public string ClientID { get; set; }
         public double PriceNetto { get; set; }
         public double PriceBrutto { get; set; }
         public DateTime PaymentDeadline { get; set; }
         public bool IsPaid { get; set; }
-        public List<ProductSellOut> ProductsSell { get; set; }
+        public List<ProductSell> ProductsSell { get; set; }
     }
 }

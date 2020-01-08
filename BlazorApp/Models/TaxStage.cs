@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace BlazorApp.Models
 {
-    public class Category
+    public class TaxStage
     {
         public Guid ID { get; set; }
-        public string Name { get; set; }
-        public string UserId { get; set; }
+        public double Stage { get; set; }
     }
 }

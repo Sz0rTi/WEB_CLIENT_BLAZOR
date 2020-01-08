@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorApp.Models
+namespace BlazorApp.Models.Out
 {
-    public class Product
+    public class ProductOut
     {
-        public Guid ID { get; set; }
         public string Name { get; set; }
         public double PriceNetto { get; set; }
         public string Description { get; set; }
@@ -15,17 +14,5 @@ namespace BlazorApp.Models
         public Guid TaxStageID { get; set; }
         public Guid UnitID { get; set; }
         public int Amount { get; set; }
-    }
-
-    public enum Controller
-    {
-        categories,
-        clients,
-        products,
-        invoicesells,
-        invoicebuys,
-        login,
-        units,
-        taxstages
     }
 }
