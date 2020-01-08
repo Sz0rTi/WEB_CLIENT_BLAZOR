@@ -16,4 +16,16 @@ namespace BlazorApp.Models
         public Guid UnitID { get; set; }
         public int Amount { get; set; }
     }
+
+    public enum Controller
+    {
+        categories,
+        clients,
+        products,
+        invoicesells,
+        invoicebuys,
+        login,
+        units,
+        taxstages
+    }
 }

@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorApp.Models
+namespace BlazorApp.Models.Out
 {
-    public class Category
+    public class UnitOut
     {
-        public Guid ID { get; set; }
         public string Name { get; set; }
-        public string UserId { get; set; }
     }
 }

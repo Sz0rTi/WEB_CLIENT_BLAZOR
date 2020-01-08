@@ -16,6 +16,7 @@ namespace BlazorApp.Models
         [Range(0.01,10000000.0, ErrorMessage = "Cena nie może wynosić 0")]
         public double PricePerItemNetto { get; set; }
         public double PricePerItemBrutto { get; set; }
+        public double BasePriceNetto { get; set; }
         public Guid TaxStageID { get; set; }
         public Guid UnitID { get; set; }
     }
