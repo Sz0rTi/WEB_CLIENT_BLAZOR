@@ -130,17 +130,17 @@ else
                 }
                 else
                 {
-            <div id="categorySelect">
+                    <div id="categorySelect">
 
-                <select name="categories" @onchange="SelectedCategoryChanged">
-                    <option value="-1">-----</option>
-                    @foreach (Category item in Categories)
-                    {
-                        <option value="@item.Name">@item.Name</option>
-                    }
-                </select>
-                <a href="newcategory">Dodaj kategorię</a>
-            </div>
+                        <select name="categories" @onchange="SelectedCategoryChanged">
+                            <option value="-1">-----</option>
+                            @foreach (Category item in Categories)
+                            {
+                                <option value="@item.Name">@item.Name</option>
+                            }
+                        </select>
+                        <a href="newcategory">Dodaj kategorię</a>
+                    </div>
                 }
                 @if (Products.Count == 0)
                 {
@@ -149,28 +149,96 @@ else
                 }
                 else
                 {
-                <div id="a">
-                    <label>
-                        Wybierz produkt:<br />
-                        <input type="text" name="aa" list="products" @bind="@selectedProduct" autocomplete="off" />
-                        <datalist id="products">
+                    <div id="a">
+                        <label>
+                            Wybierz produkt:<br />
+                            <input type="text" name="aa" list="products" @onchange="SelectedProductChanged" autocomplete="off" />
+                            <datalist id="products">
 
-                            <label>
-                                or select one from he list:
-                                <select name="aa">
-                                    @foreach (Product item in Products)
-                                    {
-                                        <option value="@item.Name" data-id="@item.ID" />
-                                    }
-                                </select>
-                            </label>
+                                <label>
+                                    or select one from he list:
+                                    <select name="aa">
+                                        @foreach (Product item in Products)
+                                        {
+                                            <option value="@item.Name" data-id="@item.ID" />
+                                        }
+                                    </select>
+                                </label>
 
-                        </datalist>
+                            </datalist>
 
-                    </label>
+                        </label>
 
-                </div>
+                    </div>
                 }
+                <br />
+
+                @if (selectedProduct.Length > 5)
+                {
+                    if (!Products.Any(p => p.Name == selectedProduct))
+                    {
+                        <br /><p>Jednostka miary:</p>
+                        if (Units.Count == 0)
+                        {
+                            <p>Nazwa J.M: </p>
+                            <input type="text" @bind="selectedUnit" />
+                        }
+                        else
+                        {
+                            <div id="b">
+                                <label>
+                                    <input type="text" list="units" @bind="@selectedUnit" autocomplete="off" />
+                                    <datalist id="units">
+
+                                        <label>
+                                            or select one from he list:
+                                            <select>
+                                                @foreach (Unit item in Units)
+                                                {
+                                                    <option value="@item.Name" data-id="@item.ID" />
+                                                }
+                                            </select>
+                                        </label>
+
+                                    </datalist>
+
+                                </label>
+
+                            </div>
+                        }
+                        <br />
+                        <p>Stawka VAT:</p><br/>
+                            if (TaxStages.Count == 0)
+                            {
+                            <input type="text" @bind="selectedTaxStage" /><p>%</p>        
+                        }
+                        else
+                        {
+                            <div id="c">
+                                <label>
+                                    <input type="text" list="taxstages" @bind="@selectedTaxStage" autocomplete="off" />
+                                    <datalist id="taxstages">
+
+                                        <label>
+                                            or select one from he list:
+                                            <select>
+                                                @foreach (TaxStage item in TaxStages)
+                                                {
+                                                    <option value="@item.Stage.ToString()" data-id="@item.ID" />
+                                                }
+                                            </select>
+                                        </label>
+
+                                    </datalist>
+
+                                </label>
+
+                            </div>
+                        }
+                    }
+                }
+
+
                 <br />
                 <b>Ilość: </b> <InputNumber id="amountIn" @bind-Value="@ModelProductBuy.Amount" />
                 <ValidationMessage For="@(() => ModelProductBuy.Amount)" />
@@ -180,7 +248,7 @@ else
                 @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
                 <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
 
-                <table width="">
+                <table >
                     <thead>
                         <tr>
                             <th>Nazwa</th>
@@ -194,14 +262,15 @@ else
                     <tbody>
                         @foreach (ProductBuyOut item in ProductsBuy)
                         {
-                            <tr>
-                                <th>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</th>
-                                <th>@item.Amount</th>
-                                <th>@GetUnitName(item.UnitID)</th>
-                                <th>@item.PricePerItemNetto.ToString("N2") zł</th>
-                                <th>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</th>
-                                <th><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
-                            </tr>
+                        <tr>
+                            <th>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</th>
+                            <th>@item.Amount</th>
+                            @*<th>@GetUnitName(item.UnitID)</th>*@
+                            <th>@item.Unit</th>
+                            <th>@item.PricePerItemNetto.ToString("N2") zł</th>
+                            <th>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</th>
+                            <th><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
+                        </tr>
                         }
                     </tbody>
                     <tfoot>
@@ -247,10 +316,13 @@ else
     private List<Unit> Units { get; set; }
     private List<Category> Categories { get; set; }
     private List<Product> Products { get; set; }
+    private List<TaxStage> TaxStages { get; set; }
     private List<ProductBuyOut> ProductsBuy { get; set; }
     private List<ProductOnList> ProductsOnList { get; set; }
 
     private string selectedProduct { get; set; }
+    private string selectedUnit { get; set; }
+    private string selectedTaxStage { get; set; }
     private string nip { get; set; }// = "8211022391";
     private string a { get; set; }
 
@@ -275,6 +347,7 @@ else
         Sellers = await Http.GetJsonAsync<List<Seller>>(_URL + Controller.Sellers);
         Units = await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
         Categories = await Http.GetJsonAsync<List<Category>>(_URL + Controller.categories);
+        TaxStages = await Http.GetJsonAsync<List<TaxStage>>(_URL + Controller.taxstages);
         seller = new Seller();
         ModelSellerOut = new SellerOut();
         Products = new List<Product>();
@@ -283,6 +356,8 @@ else
         a = "";
         nip = string.Empty;
         selectedProduct = string.Empty;
+        selectedUnit = string.Empty;
+        selectedTaxStage = "";
     }
 
     async Task SelectedSellerChanged(ChangeEventArgs e)
@@ -322,14 +397,33 @@ else
 
     async Task SelectedProductChanged(ChangeEventArgs e)
     {
-        if ((string)e.Value != "")
+        if ((string)e.Value != "" || e.Value.ToString().Length > 5)
         {
-            if (Products.Any(p => p.Name == e.Value.ToString()))
+            /*if (Products.Any(p => p.Name == e.Value.ToString()))
             {
                 product = Products.Where(p => p.Name == e.Value.ToString()).First();
-                unit = Units.Where(u => u.ID == product.UnitID).First();
-                selectedProduct = product.Name;
-            }
+                unit = Units.Where(u => u.ID == product.UnitID).First();*/
+            //selectedUnit = unit.Name;
+            //selectedTaxStage = TaxStages.Where(t => t.ID == product.TaxStageID).First().Stage.ToString();
+            selectedProduct = e.Value.ToString();
+            StateHasChanged();
+            //}
+        }
+    }
+
+    async Task SelectedUnitChanged(ChangeEventArgs e)
+    {
+        if ((string)e.Value != "")
+        {
+            selectedUnit = e.Value.ToString();
+        }
+    }
+
+    async Task SelectedTaxStageChanged(ChangeEventArgs e)
+    {
+        if ((string)e.Value != "")
+        {
+            //selectedTaxStage = double.Parse(e.Value.ToString().Replace("%","").Replace(",","."));
         }
     }
 
@@ -371,29 +465,60 @@ else
                 ProductBuyOut temp = new ProductBuyOut();
                 if (Products.Where(p => p.Name == selectedProduct).FirstOrDefault() == null)
                 {
-                    ProductOut newProduct = new ProductOut
+                    ProductOut newProduct = new ProductOut();
+                    newProduct.Name = selectedProduct;
+                    newProduct.Amount = 0;
+                    newProduct.CategoryID = (Guid)category.ID;
+                    Unit unit = new Unit();
+                    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    if(selectedUnit != "")
                     {
-                        Name = selectedProduct,
-                        Amount = 0,
-                        CategoryID = (Guid)category.ID,
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        UnitID = new Guid("60298bb9-efd7-46ce-1d6f-08d73179e980"),
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        PriceNetto = 0,
-                        Description = "",
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        TaxStageID = new Guid("ba78d24d-fef4-4b96-716f-08d7317c8e05")
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    };
+                        unit = Units.Where(u => u.Name == selectedUnit).FirstOrDefault();
+                        if(unit == null)
+                        {
+                            unit = await Http.PostJsonAsync<Unit>(_URL + Controller.units, new UnitOut { Name = selectedUnit });
+                            newProduct.UnitID = unit.ID;
+                            temp.UnitID = unit.ID;
+                            Units.Add(unit);
+                        }
+                        else
+                        {
+                            newProduct.UnitID = unit.ID;
+                        }
+                    }
+                    //newProduct.UnitID = new Guid("60298bb9-efd7-46ce-1d6f-08d73179e980");
+                    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    newProduct.PriceNetto = 0;
+                    newProduct.Description = "";
+                    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    TaxStage tax = new TaxStage();
+                    if(selectedTaxStage != "")
+                    {
+                        TaxStage taxStage = TaxStages.Where(u => u.Stage == double.Parse(selectedTaxStage.ToString().Replace("%","").Replace(",","."))).FirstOrDefault();
+                        if(taxStage == null)
+                        {
+                            tax = await Http.PostJsonAsync<TaxStage>(_URL + Controller.taxstages, new TaxStageOut { Stage = double.Parse(selectedTaxStage.ToString().Replace("%","").Replace(",",".")) });
+                            newProduct.TaxStageID = tax.ID;
+                            TaxStages.Add(tax);
+                        }
+                        else
+                        {
+                            newProduct.TaxStageID = taxStage.ID;
+                        }
+                    }
+
+                    //newProduct.TaxStageID = new Guid("ba78d24d-fef4-4b96-716f-08d7317c8e05");
+                    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     Product tempProduct = await Http.PostJsonAsync<Product>(_URL + Controller.products, newProduct);
                     temp.ProductID = tempProduct.ID;
                     temp.Name = selectedProduct;
                     temp.TaxStageID = tempProduct.TaxStageID;
                     temp.Amount = (int)ModelProductBuy.Amount;
-                    temp.Unit = "TEST";
+                    temp.Unit = GetUnitName(newProduct.UnitID);
                     temp.PricePerItemNetto = (double)ModelProductBuy.PricePerItemNetto;
-                    var tempTaxStage = await Http.GetJsonAsync<TaxStage>(_URL + Controller.taxstages + "/" + tempProduct.TaxStageID.ToString());
-                    temp.PricePerItemBrutto = tempProduct.PriceNetto * ((tempTaxStage.Stage + 100.0) / 100.0);
+                    //var tempTaxStage = TaxStages.Where(t => t.ID == tempProduct.TaxStageID).First();
+                    //await Http.GetJsonAsync<TaxStage>(_URL + Controller.taxstages + "/" + tempProduct.TaxStageID.ToString());
+                    temp.PricePerItemBrutto = tempProduct.PriceNetto * ((tax.Stage + 100.0) / 100.0);
                     product = tempProduct;
                 }
 
@@ -406,7 +531,9 @@ else
                     temp.Amount = ModelProductBuy.Amount;
                     temp.PricePerItemNetto = ModelProductBuy.PricePerItemNetto;
                     temp.TaxStageID = product.TaxStageID;
+                    
                     temp.UnitID = product.UnitID;
+                    temp.Unit = GetUnitName(temp.UnitID);
 
 
                     //this.StateHasChanged();
@@ -414,6 +541,8 @@ else
                 ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
                 ProductsBuy.Add(temp);
                 selectedProduct = string.Empty;
+                ModelProductBuy.Amount = 0;
+                ModelProductBuy.PricePerItemNetto = double.Parse("0");
             }
         }
     }
@@ -433,11 +562,12 @@ else
 
     string GetUnitName(Guid id)
     {
-        foreach (Unit item in Units)
+        return Units.Where(u => u.ID == id).First().Name;
+        /*foreach (Unit item in Units)
         {
             if (item.ID == id) return item.Name;
         }
-        return "BŁĄD";
+        return "BŁĄD";*/
     }
 
     async Task CreateInvoice()
