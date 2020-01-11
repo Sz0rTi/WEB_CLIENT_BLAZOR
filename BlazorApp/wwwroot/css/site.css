@@ -8,6 +8,19 @@ a, .btn-link {
     color: #0366d6;
 }
 
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: .25rem 1.5rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+}
+
 input.contact{
     width:100%;
 }
@@ -26,7 +39,7 @@ table, th, td {
 table.contact {
     border: 1px solid black;
     table-layout: fixed;
-    width: 50%;
+    width: 100%;
     word-wrap: break-word;
 }
     table.contact th{

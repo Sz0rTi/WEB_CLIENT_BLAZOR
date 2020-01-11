@@ -1,0 +1,106 @@
+﻿@page "/invoicebuydetails/{Id}"
+@attribute [Authorize]
+@using Models
+@using Models.Out
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+@if(Invoice == null) {
+    <h2>Ładowanie...</h2>
+}
+else
+{
+    <h1>@Invoice.Name</h1>
+
+    <div class="row">
+        <div class="col-6">
+            <table>
+                <tr>
+                    <td>Nazwa firmy </td>
+                    <td>@Seller.Name</td>
+                </tr>
+                <tr>
+                    <td>Ulica </td>
+                    <td>@Seller.Street</td>
+                </tr>
+                <tr>
+                    <td>Numer </td>
+                    <td>@Seller.Number</td>
+                </tr>
+                <tr>
+                    <td>Kod pocztowy </td>
+                    <td>@Seller.PostCode</td>
+                </tr>
+                <tr>
+                    <td>NIP </td>
+                    <td>@Seller.NIP</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-6">
+            <table>
+                <tr>
+                    <td>Data wystawienia </td>
+                    <td>@Invoice.Date</td>
+                </tr>
+                <tr>
+                    <td>Termin płatności </td>
+                    <td>@Invoice.PaymentDeadline</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <table>
+        <tr>
+            <th>L.p.</th>
+            <th>Nazwa towaru</th>
+            <th>J.M.</th>
+            <th>Ilość</th>
+            <th>Cena</th>
+            <th>Wartość netto</th>
+        </tr>
+        @for(int i = 1;i <= Invoice.ProductsBuy.Count; i++)
+        {
+            <tr>
+                <td>@i.</td>
+                <td>@Invoice.ProductsBuy[i-1].Name</td>
+                <td>@GetUnitName(Invoice.ProductsBuy[i-1].UnitID)</td>
+                <td>@Invoice.ProductsBuy[i-1].Amount</td>
+                <td>@(Invoice.ProductsBuy[i-1].PricePerItemNetto.ToString("N2"))zł</td>
+                <td>@((Invoice.ProductsBuy[i-1].PricePerItemNetto * Invoice.ProductsBuy[i-1].Amount).ToString("N2"))zł</td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    private InvoiceBuy Invoice { get; set; }
+    private Seller Seller { get; set; }
+    private List<Unit> Units { get; set; }
+    [Parameter]
+    public string Id { get; set; }
+    const string _URL = "https://localhost:5001/api/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Invoice = await Http.GetJsonAsync<InvoiceBuy>(_URL + Controller.invoicebuys + "/" + Id);
+        Seller = await Http.GetJsonAsync<Seller>(_URL + Controller.sellers + "/" + Invoice.SellerID.ToString());
+        Units = await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
+    }
+
+    async Task<string> GetUnit(Guid id)
+    {
+        Unit temp = await Http.GetJsonAsync<Unit>(_URL + Controller.units + "/byproductid/" + id.ToString());
+        return temp.Name;
+    }
+    
+    string GetUnitName(Guid id)
+    {
+        foreach (Unit item in Units)
+        {
+            if (item.ID == id) return item.Name;
+        }
+        return "BŁĄD";
+    }
+}

@@ -6,11 +6,11 @@
 @inject IJSRuntime JSRuntime
 
 
-<h3>NewInvoiceBuyModel</h3>
+<h3>Nowa faktura zakupowa</h3>
 
 @if (Units == null || Sellers == null || Categories == null)
 {
-    <h2>Loading...</h2>
+    <h2>Ładowanie strony...</h2>
 }
 else
 {
@@ -59,7 +59,7 @@ else
                     @*<input id=nipinput @bind="@nip" />*@
                     <InputText id="nipIT" @bind-Value="@ModelSellerOut.NIP" />
                     <ValidationMessage For="@(() => ModelSellerOut.NIP)" />
-                    <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
+                    <button class="btn btn-primary" style="text-align: right" type="submit" @onclick="SearchByNip">Click me</button>
 
                 </EditForm>
             </div>
@@ -513,6 +513,7 @@ else
                     temp.ProductID = tempProduct.ID;
                     temp.Name = selectedProduct;
                     temp.TaxStageID = tempProduct.TaxStageID;
+                    temp.UnitID = tempProduct.UnitID;
                     temp.Amount = (int)ModelProductBuy.Amount;
                     temp.Unit = GetUnitName(newProduct.UnitID);
                     temp.PricePerItemNetto = (double)ModelProductBuy.PricePerItemNetto;
@@ -528,6 +529,7 @@ else
                     unit = Units.Where(u => u.ID == product.UnitID).First();
 
                     temp.ProductID = product.ID;
+                    temp.Name = product.Name;
                     temp.Amount = ModelProductBuy.Amount;
                     temp.PricePerItemNetto = ModelProductBuy.PricePerItemNetto;
                     temp.TaxStageID = product.TaxStageID;
@@ -540,7 +542,9 @@ else
                 }
                 ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
                 ProductsBuy.Add(temp);
-                selectedProduct = string.Empty;
+                selectedProduct = "";
+                selectedTaxStage = "";
+                selectedUnit = "";
                 ModelProductBuy.Amount = 0;
                 ModelProductBuy.PricePerItemNetto = double.Parse("0");
             }

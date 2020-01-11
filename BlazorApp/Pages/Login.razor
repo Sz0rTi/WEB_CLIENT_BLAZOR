@@ -8,22 +8,20 @@
 @inject IAuthService _service
 @inject NavigationManager NavigationManager
 
-<h3>Login</h3>
+<h3>Logowanie</h3>
 
 @if (!Status)
 {
     <h3 style="color:red">@Error</h3>
 }
 <form @onsubmit="LogIn">
-    <input type="text" @bind="login" />
-    <br />
+    <p>E-mail: </p><input type="text" @bind="login" />
+    <br /><br />
+    <p>Hasło: </p>
     <input type="password" @bind="password" />
-    <button type="submit" @onclick="LogIn">JP</button>
+    <button type="submit" @onclick="LogIn">Zaloguj</button>
 </form>
 
-<br />
-<br />
-<button type="submit" @onclick="_service.Logout">WYLOGUJKURWO</button>
 
 @code {
     [CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
