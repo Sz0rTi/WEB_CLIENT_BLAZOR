@@ -12,7 +12,7 @@
 else
 {
     <h1>@Invoice.Name</h1>
-
+    <button type="button" @onclick="PDF">PDF</button>
     <div class="row">
         <div class="col-6">
             <table>
@@ -103,5 +103,10 @@ else
             if (item.ID == id) return item.Name;
         }
         return "BŁĄD";
+    }
+
+    void PDF()
+    {
+        var a = Http.GetJsonAsync<bool>(_URL + Controller.invoicesells + "/pdf/" + Invoice.ID.ToString());
     }
 }

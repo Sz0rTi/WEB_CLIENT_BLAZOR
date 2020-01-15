@@ -4,9 +4,11 @@
 @using Models.Out
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
 
 
-<h3>Lista faktur zakupowych</h3><br />
+<h3>Lista faktur zakupowych</h3>
+<br />
 
 @if (selectedMonth == null)
 {
@@ -20,100 +22,80 @@ else
     }
     else
     {
-    <p>Wybierz rok:</p>
-    <select @onchange="SelectedYearChanged">
-        <option value="0">----</option>
-        @for (int i = CurrentData.Year; i >= MinDate.Year; i--)
-        {
-            <option value="@i">@i</option>
-        }
-    </select>
-    <br />
-    <p>Wybierz miesiąc:</p>
-    <select @onchange="SelectedMonthChanged">
-
-        @if (selectedYear == MinDate.Year && MinDate.Year != CurrentData.Year)
-        {
-            for (int i = MinDate.Month; i <= 12; i++)
+        <p>Wybierz rok:</p>
+        <select value="@selectedYear" @onchange="SelectedYearChanged">
+            @for (int i = CurrentData.Year; i >= MinDate.Year; i--)
             {
-                <option value="@i">@Months[i]</option>
+                <option value="@i">@i</option>
             }
-        }
-        else
-        {
-            if (selectedYear == CurrentData.Year)
+        </select>
+        <br />
+        <p>Wybierz miesiąc:</p>
+        <select value="@selectedMonth" @onchange="SelectedMonthChanged">
+
+            @if (selectedYear == MinDate.Year && MinDate.Year != CurrentData.Year)
             {
-                for (int i = 1; i <= CurrentData.Month; i++)
+                for (int i = MinDate.Month; i <= 12; i++)
                 {
                     <option value="@i">@Months[i]</option>
                 }
             }
             else
             {
-                for (int i = 1; i <= 12; i++)
+                if (selectedYear == CurrentData.Year)
                 {
-                    <option value="@i">@Months[i]</option>
+                    for (int i = 1; i <= CurrentData.Month; i++)
+                    {
+                        <option value="@i">@Months[i]</option>
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i">@Months[i]</option>
+                    }
                 }
             }
-        }
-    </select>
-    <br />@*
-        <label>
-            Wybierz fakturę:<br />
-            <input type="text" list="invoices" @onchange="SelectedInvoiceChanged" />
-            <datalist id="invoices">
-
-                <label>
-                    or select one from the list:
-                    <select name="sellers">
-                        @foreach (InvoiceBuy item in Invoices)
-                        {
-                            <option value="@item.Name" data-id="@item.ID" />
-                        }
-                    </select>
-                </label>
-
-            </datalist>
-
-        </label>*@
-
-<table border="1" width="100%">
-    <col style="width:5%">
-    <col style="width:50%">
-    <col style="width:15%">
-    <col style="width:15%">
-    <col style="width:15%">
-    <tr>
-        <th>L.p.</th>
-        <th>Nazwa</th>
-        <th>Data wystawienia</th>
-        <th>Wartość netto</th>
-        <th>Opłacona?</th>
-    </tr>
-    @if (Invoices.Count != 0)
-    {
-        for (int i = 1; i <= Invoices.Count; i++)
-        {
+        </select>
+        <br />
+        <table border="1" width="100%">
+            <col style="width:5%">
+            <col style="width:50%">
+            <col style="width:15%">
+            <col style="width:15%">
+            <col style="width:15%">
             <tr>
-                <td>@i.</td>
-                <td><a href="@Details(Invoices[i - 1].ID)" target="_blank">@Invoices[i - 1].Name</a></td>
-                <td>@Invoices[i - 1].Date</td>
-                <td>@Invoices[i - 1].PriceNetto.ToString("N2")zł</td>
-                <td>
-                    @if (Invoices[i - 1].IsPaid)
-                    {
-                        <p>Zapłacona</p>
-                    }
-                    else
-                    {
-                        <p>Niezapłacona</p>
-                    }
-                </td>
+                <th>L.p.</th>
+                <th>Nazwa</th>
+                <th>Data wystawienia</th>
+                <th>Wartość netto</th>
+                <th>Opłacona?</th>
             </tr>
-        }
-    }
+            @if (Invoices.Count != 0)
+            {
+                for (int i = 1; i <= Invoices.Count; i++)
+                {
+                    <tr>
+                        <td>@i.</td>
+                        <td><a href="@Details(Invoices[i - 1].ID)" target="_blank">@Invoices[i - 1].Name</a></td>
+                        <td>@Invoices[i - 1].Date</td>
+                        <td>@Invoices[i - 1].PriceNetto.ToString("N2")zł</td>
+                        <td>
+                            @if (Invoices[i - 1].IsPaid)
+                            {
+                                <p>Zapłacona</p>
+                            }
+                            else
+                            {
+                                <p>Niezapłacona</p>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
 
-</table>
+        </table>
     }
     <p>Wybrany index roku: @selectedYear.ToString()</p>
     <p>Wybrany index miesiąca: @selectedMonth.ToString()</p>
@@ -140,10 +122,10 @@ else
         {
             MinDate = await Http.GetJsonAsync<InvoicesDate>(_URL + Controller.invoicebuys + "/min");
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             MinDate = null;
-            
+
         }
         Months.Add(1, "Styczeń");
         Months.Add(2, "Luty");
@@ -157,40 +139,55 @@ else
         Months.Add(10, "Październik");
         Months.Add(11, "Listopad");
         Months.Add(12, "Grudzień");
-        selectedYear = CurrentData.Year;
-        selectedMonth = CurrentData.Month;
-        //SelectedYearChanged(new ChangeEventArgs { Value = selectedYear });
-        StateHasChanged();
-    }
-
-    async void SelectedYearChanged(ChangeEventArgs e)
-    {
-        /*if(e.Value.ToString() != "0")
+        if (await _localStorage.ContainKeyAsync("selectedYear"))
         {
-            selectedYear = int.Parse(e.Value.ToString());
-            var temp = await Http.PostJsonAsync<List<InvoiceBuy>>(_URL + Controller.invoicebuys + "/bydate", new InvoicesDate { Year = selectedYear, Month = selectedMonth });
-            if (temp.Count == 0) Invoices = new List<InvoiceBuy>();
-            else
-            {
-                Invoices = temp;
-            }
+            selectedYear = int.Parse(await _localStorage.GetItemAsync<string>("selectedYear"));
+            selectedMonth = int.Parse(await _localStorage.GetItemAsync<string>("selectedMonth"));
+
 
         }
         else
         {
-            selectedYear = 0;
-            Invoices = new List<InvoiceBuy>();
-        }*/
-        if(e.Value.ToString() != "0")
+            selectedYear = CurrentData.Year;
+            selectedMonth = CurrentData.Month;
+        }
+        SelectedYearChanged(new ChangeEventArgs { Value = selectedYear });
+        SelectedMonthChanged(new ChangeEventArgs { Value = selectedMonth });
+        base.StateHasChanged();
+    }
+
+    async void SelectedYearChanged(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() != "0")
+        {
             selectedYear = int.Parse(e.Value.ToString());
-        SelectedMonthChanged(new ChangeEventArgs { Value = 1 });
+            await _localStorage.SetItemAsync("selectedYear", selectedYear.ToString());
+            if(selectedYear == MinDate.Year)
+            {
+                if (int.Parse(await _localStorage.GetItemAsync<string>("selectedMonth")) > MinDate.Month)
+                {
+                    SelectedMonthChanged(new ChangeEventArgs { Value = await _localStorage.GetItemAsync<string>("selectedMonth") });
+                }
+                else
+                {
+                    SelectedMonthChanged(new ChangeEventArgs { Value = MinDate.Month });
+                }
+                
+            }
+            else
+            {
+                SelectedMonthChanged(new ChangeEventArgs { Value = 1 });
+            }
+            base.StateHasChanged();
+        }
     }
 
     async void SelectedMonthChanged(ChangeEventArgs e)
     {
-        selectedMonth = int.Parse(e.Value.ToString());
+        selectedMonth =  int.Parse(e.Value.ToString());
+        await _localStorage.SetItemAsync("selectedMonth", selectedMonth.ToString());
         var temp = await Http.PostJsonAsync<List<InvoiceBuy>>(_URL + Controller.invoicebuys + "/bydate", new InvoicesDate { Year = selectedYear, Month = selectedMonth });
-        if(temp.Count == 0)
+        if (temp.Count == 0)
         {
             Invoices = new List<InvoiceBuy>();
         }
@@ -198,7 +195,7 @@ else
         {
             Invoices = temp;
         }
-        StateHasChanged();
+        base.StateHasChanged();
     }
 
     async void SelectedInvoiceChanged()
