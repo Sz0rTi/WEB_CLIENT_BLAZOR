@@ -38,20 +38,6 @@ namespace BlazorApp
             var loginAsJson = JsonSerializer.Serialize(loginModel);
             var loginResult = await Http.PostAsync(_URL + Controller.login, new StringContent(loginAsJson, Encoding.UTF8, "application/json"));
             var result = JsonSerializer.Deserialize<LoginResult>(await loginResult.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-            //if (!loginResult.IsSuccessStatusCode)
-            //{
-                // return result;
-                //}
-
-                /*await _localStorage.SetItemAsync("authToken", loginResult.Token);
-                ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email);
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", loginResult.Token);
-
-                return loginResult;*/
-
-                //LoginModel loginModel = new LoginModel { Email = login, Password = password };
-                //var result = await Http.PostJsonAsync<LoginResult>(_URL + Controller.login, loginModel).;
                 if (result.Successful)
                 {
                 await _localStorage.SetItemAsync("authToken", result.Token);
@@ -67,6 +53,8 @@ namespace BlazorApp
             await _localStorage.RemoveItemAsync("authToken");
             ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
             Http.DefaultRequestHeaders.Authorization = null;
+            await _localStorage.RemoveItemAsync("selectedYear");
+            await _localStorage.RemoveItemAsync("selectedMonth");
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿@page "/newinvoicesell"
+@page "/newinvoicesell/{status:int}"
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
 @using Models
@@ -9,136 +10,84 @@
 @inject Blazored.LocalStorage.ILocalStorageService _localStorage
 
 
-<h3>NewInvoiceSellModel</h3>
+<h3>Nowa faktura sprzedaży</h3>
 
 @if (Units == null || Clients == null || Categories == null)
 {
-    <h2>Loading...</h2>
+    <h2>Ładowanie strony...</h2>
 }
 else
 {
-
+    if(status != 0)
+    {
+        <h3 style="color:green">Faktura utworzona pomyślnie.</h3>
+    }
     <div id="main">
-        @if (client == null)
-        {
-            <div id="clientInfo">
-                <EditForm Model="@ModelClientOut">
-                    <div class="alert @StatusClass">@StatusMessage</div>
-                    <DataAnnotationsValidator />
-                    <b>Nazwa firmy: </b>
-                    <label>
-                        <input type="text" name="client" list="clients" @onchange="SelectedClientChanged" />
-                        <datalist id="clients">
-                            <label>
-                                or select one from the list:
-                                <select name="clients">
-                                    @foreach (Client item in Clients)
-                                    {
-                                        <option value="@item.Name" data-id="@item.ID" />
-                                    }
-                                </select>
-                            </label>
-                        </datalist>
-                    </label>
-                    <br /><b>Ulica: </b>
-                    <InputText id="street" @bind-Value="@ModelClientOut.Street" />
-                    <ValidationMessage For="@(() => ModelClientOut.Street)" />
-                    <br /><b>Numer: </b>
-                    <InputText id="number" @bind-Value="@ModelClientOut.Number" />
-                    <ValidationMessage For="@(() => ModelClientOut.Number)" />
-                    <br /><b>Kod pocztowy: </b>
-                    <InputText id="postcode" @bind-Value="@ModelClientOut.PostCode" />
-                    <ValidationMessage For="@(() => ModelClientOut.PostCode)" />
-                    <br /><b>NIP: </b>
-                    <InputText id="nipIT" @bind-Value="@ModelClientOut.NIP" />
-                    <ValidationMessage For="@(() => ModelClientOut.NIP)" />
-                    <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
-
-                </EditForm>
-            </div>
-
-        }
-        else
-        {
-            <div id="clientInfo">
-                <EditForm Model="@ModelClientOut">
-
-                    <div class="alert @StatusClass">@StatusMessage</div>
-
-                    <DataAnnotationsValidator />
-
+        <form @onsubmit="CreateInvoice">
+            <div id="clientInfo" class="row">
+                <div class="col-6">
                     <table class="contact">
                         <tr>
                             <td>Nazwa firmy: </td>
                             <td>
-                                <label class="contact">
-                                    <input class="contact" type="text" name="client" list="clients" @onchange="SelectedClientChanged" value="@ModelClientOut.Name" />
-                                    <datalist id="clients">
-
-                                        <label>
-                                            or select one from the list:
-                                            <select name="clients">
-                                                @foreach (Client item in Clients)
-                                                {
-                                                    <option value="@item.Name" data-id="@item.ID" />
-                                                }
-                                            </select>
-                                        </label>
-
-                                    </datalist>
-
-                                </label>
+                                @if (Clients.Count == 0)
+                                {
+                                    <input class="contact" type="text" @bind-value="client.Name" @bind-value:event="SelectedClientChanged" required />
+                                }
+                                else
+                                {
+                                    <label class="contact">
+                                        <input class="contact" type="text" name="client" list="clients" @onchange="SelectedClientChanged" value="@ModelClientOut.Name" />
+                                        <datalist id="clients">
+                                            <label>
+                                                or select one from the list:
+                                                <select name="clients">
+                                                    @foreach (Client item in Clients)
+                                                    {
+                                                        <option value="@item.Name" data-id="@item.ID" />
+                                                    }
+                                                </select>
+                                            </label>
+                                        </datalist>
+                                    </label>
+                                }
                             </td>
                         </tr>
                         <tr>
-                            <td>Ulica: </td>
-                            <td><InputText class="contact" id="street" @bind-Value="@ModelClientOut.Street" /></td>
+                            <td>Ulica </td>
+                            <td><input type="text" class="contact" id="street" @bind="@ModelClientOut.Street" required /></td>
                         </tr>
                         <tr>
-                            <td>Numer:</td>
-                            <td><InputText class="contact" id="number" @bind-Value="@ModelClientOut.Number" /></td>
+                            <td>Numer </td>
+                            <td><input type="text" class="contact" id="number" @bind="@ModelClientOut.Number" required /></td>
                         </tr>
                         <tr>
-                            <td>Kod pocztowy: </td>
-                            <td><InputText class="contact" id="postcode" @bind-Value="@ModelClientOut.PostCode" /></td>
+                            <td>Kod pocztowy </td>
+                            <td><input type="text" class="contact" id="postcode" @bind="@ModelClientOut.PostCode" required /></td>
                         </tr>
                         <tr>
-                            <td>NIP: </td>
-                            <td><InputText class="contact" id="nipIT" @bind-Value="@ModelClientOut.NIP" /></td>
+                            <td>NIP </td>
+                            <td><input type="text" class="contact" id="nipIT" @bind="@ModelClientOut.NIP" required /></td>
                         </tr>
                     </table>
-
-
-                    @*<br /><b>Ulica: </b>
-                        <InputText id="street" @bind-Value="@ModelClientOut.Street" />
-                        <ValidationMessage For="@(() => ModelClientOut.Street)" />
-                        <br /><b>Numer: </b>
-                        <InputText id="number" @bind-Value="@ModelClientOut.Number" />
-                        <ValidationMessage For="@(() => ModelClientOut.Number)" />
-                        <br /><b>Kod pocztowy: </b>
-                        <InputText id="postcode" @bind-Value="@ModelClientOut.PostCode" />
-                        <ValidationMessage For="@(() => ModelClientOut.PostCode)" />
-                        <br /><b>NIP: </b>
-                        <InputText id="nipIT" @bind-Value="@ModelClientOut.NIP" />
-                        <ValidationMessage For="@(() => ModelClientOut.NIP)" />*@
-                    <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
-
-                </EditForm>
+                    <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Szukaj po NIP</button>
+                </div>
+                <div class="col-6">
+                    ebe
+                    ebbe
+                </div>
             </div>
 
 
 
-        }
 
-        <div id="productsDIV">
-            <EditForm Model="@ModelProductSell" OnValidSubmit="CreateInvoice">
+            <div id="productsDIV">
 
                 <div class="alert @StatusClass">@StatusMessage</div>
 
-                <DataAnnotationsValidator />
 
                 <div id="categorySelect">
-
+                    <p>Kategoria:</p>
                     <select name="categories" @onchange="SelectedCategoryChanged">
                         <option value="-1">-----</option>
                         @foreach (Category item in Categories)
@@ -171,12 +120,9 @@ else
                 </div>
 
                 <br />
-                <b>Ilość: </b> <InputNumber id="amountIn" @bind-Value="@ModelProductSell.Amount" />
-                <ValidationMessage For="@(() => ModelProductSell.Amount)" />
-                <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="PriceNetto2" />
-                <ValidationMessage For="@(() => ModelProductSell.PricePerItemNetto)" />
-                <b>Marża: </b> <InputNumber id="marginIn" @bind-Value="Margin2" />
-                @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
+                <b>Ilość: </b> <input type="number" id="amountIn" @bind="@ModelProductSell.Amount" />
+                <b> Cena netto:</b> <input type="number" id="priceNettoIn" @bind="PriceNetto2" />
+                <b>Marża: </b> <input type="number" id="marginIn" @bind="Margin2" />
                 <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
 
                 <table>
@@ -214,11 +160,8 @@ else
                     </tfoot>
                 </table>
                 <input type="submit" value="Stwórz" />
-            </EditForm>
-        </div>
-        @*<button type="submit" @onclick="CreateInvoice">Stwórz</button>*@
-
-
+            </div>
+        </form>
     </div>
 }
 
@@ -240,8 +183,8 @@ else
         StatusMessage = DateTime.Now + " Handle invalid submit";
     }
 
-
-
+    [Parameter]
+    public int status { get; set; } = 0;
     private List<Client> Clients { get; set; }
     private List<Unit> Units { get; set; }
     private List<Category> Categories { get; set; }
@@ -389,25 +332,29 @@ else
     {
         if (selectedProduct != string.Empty)
         {
-            //if(ModelProductSell.Amount != 0 && ModelProductSell.PricePerItemNetto !=0)
-            //{
-            product = Products.Where(p => p.Name == selectedProduct).First();
-            unit = Units.Where(u => u.ID == product.UnitID).First();
-            var taxstage = await Http.GetJsonAsync<TaxStage>(_URL + Controller.taxstages + "/" + product.TaxStageID.ToString());
-            ProductSellOut temp = new ProductSellOut();
-            temp.ProductID = product.ID;
-            temp.Amount = ModelProductSell.Amount;
-            temp.PricePerItemNetto = ModelProductSell.PricePerItemNetto;
-            temp.PricePerItemBrutto = ModelProductSell.PricePerItemNetto * (1.0 + taxstage.Stage / 100.0);
-            temp.TaxStageID = product.TaxStageID;
-            temp.UnitID = product.UnitID;
-            temp.BasePriceNetto = product.PriceNetto;
+            if (ModelProductSell.Amount != 0 && ModelProductSell.PricePerItemNetto != 0)
+            {
+                product = Products.Where(p => p.Name == selectedProduct).First();
+                unit = Units.Where(u => u.ID == product.UnitID).First();
+                var taxstage = await Http.GetJsonAsync<TaxStage>(_URL + Controller.taxstages + "/" + product.TaxStageID.ToString());
+                ProductSellOut temp = new ProductSellOut();
+                temp.ProductID = product.ID;
+                temp.Name = product.Name;
+                temp.Amount = ModelProductSell.Amount;
+                temp.PricePerItemNetto = ModelProductSell.PricePerItemNetto;
+                temp.PricePerItemBrutto = ModelProductSell.PricePerItemNetto * (1.0 + taxstage.Stage / 100.0);
+                temp.TaxStageID = product.TaxStageID;
+                temp.UnitID = product.UnitID;
+                temp.BasePriceNetto = product.PriceNetto;
 
-            ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
-            ProductsSell.Add(temp);
-            selectedProduct = string.Empty;
-            //this.StateHasChanged();
-            //}
+                ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
+                ProductsSell.Add(temp);
+                selectedProduct = string.Empty;
+                ModelProductSell.PricePerItemNetto = 0.0;
+                Margin = 0;
+                ModelProductSell.Amount = 0;
+                //this.StateHasChanged();
+            }
         }
     }
 
@@ -454,7 +401,7 @@ else
                 temp.PriceBrutto += item.PricePerItemBrutto * item.Amount;
             }
             InvoiceSell response = await Http.PostJsonAsync<InvoiceSell>(_URL + Controller.invoicesells, temp);
-            NavigationManager.NavigateTo("/newinvoicesell");
+            NavigationManager.NavigateTo($"/newinvoicesell/1");
         }
     }
 

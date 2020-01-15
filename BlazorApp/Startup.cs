@@ -1,6 +1,5 @@
 using Blazored.LocalStorage;
-using Blazored.Modal;
-using BlazorModal.Services;
+using BlazorStrap;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +14,7 @@ namespace BlazorApp
             services.AddAuthorizationCore();
             services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
             services.AddScoped<IAuthService, AuthService>();
-            services.AddBlazoredModal();
-            services.AddScoped<ModalService>();
+            services.AddBootstrapCSS();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

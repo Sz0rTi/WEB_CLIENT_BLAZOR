@@ -2,16 +2,13 @@
 @inject HttpClient Http
 @using Models
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
+<h3>Witamy w systemie fakturowania!</h3>
+}
 
 
-    <SurveyPrompt Title="How is Blazor working for you?" />
+@code{
+    const string _URL = "https://localhost:5001/api/";
 
-    @code{
-        const string _URL = "https://localhost:5001/api/";
     protected override void OnInitialized()
     {
         StateHasChanged();
@@ -19,6 +16,6 @@ Welcome to your new app.
 
     async void GetPDF()
     {
-        
+
     }
-    }
+}

@@ -3,15 +3,25 @@
 @inject IAuthService _service
 @inject NavigationManager NavigationManager
 
-<h3>Register</h3>
+<h3>Rejestracja użytkownika</h3>
 
 <form @onsubmit="RegisterMethod">
     <p>Email: </p>
-    <input type="text" @bind="Email" /><br />
+    <input type="text" @bind="Email" required /><br />
     <p>Hasło: </p>
-    <input type="password" @bind="Password" /><br />
-    <p>Powtórz hasło: </p>
-    <input type="password" @bind="ConfirmedPassword" />
+    <input type="password" @bind="Password" required /><br />
+    <p style="display: inline-block;">Powtórz hasło: </p>
+    <input type="password" @bind="ConfirmedPassword" required />
+    <p>Nazwa firmy: </p>
+    <input type="text" @bind="Name" required />
+    <p>Adres: </p>
+    <input type="text" @bind="Address" required />
+    <p>Numer pocztowy: </p>
+    <input type="text" @bind="PostCode" required />
+    <p>Miejscowość: </p>
+    <input type="text" @bind="City" required />
+    <p>NIP: </p>
+    <input type="text" @bind="NIP" required />
     <button type="submit">Stwórz</button>
 
 </form>
@@ -20,15 +30,21 @@
     private string Email { get; set; }
     private string Password { get; set; }
     private string ConfirmedPassword { get; set; }
+    private string Name { get; set; }
+    private string Address { get; set; }
+    private string PostCode { get; set; }
+    private string City { get; set; }
+    private string NIP { get; set; }
 
 
     async void RegisterMethod()
     {
-        RegisterModel model = new RegisterModel { Email = Email, Password = Password, ConfirmPassword = ConfirmedPassword };
+        RegisterModel model = new RegisterModel { Email = Email, Password = Password, ConfirmPassword = ConfirmedPassword,
+                Name = Name, Address = Address, PostCode = PostCode, City = City, NIP = NIP};
         RegisterResult result = await _service.Register(model);
         if (result.Successful)
         {
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/login");
         }
     }
 }

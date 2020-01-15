@@ -10,6 +10,7 @@ namespace BlazorApp.Models
     {
         public Guid ID { get; set; }
         public Guid InvoiceSellID { get; set; }
+        public string Name { get; set; }
         public Guid ProductID { get; set; }
         [Range(1.0,100000000.0,ErrorMessage = "Ilość nie może wynosić 0")]
         public int Amount { get; set; }

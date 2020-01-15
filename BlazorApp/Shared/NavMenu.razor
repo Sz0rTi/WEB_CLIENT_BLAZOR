@@ -1,4 +1,7 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+﻿@using BlazorStrap
+@inject IBootstrapCSS BootstrapCSS
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">BlazorApp</a>
     <button class="navbar-toggler" @onclick="@ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -9,25 +12,28 @@
     <ul class="nav flex-column">
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
+                <span class="oi oi-home" aria-hidden="true"></span> Strona główna
             </NavLink>
         </li>
         <AuthorizeView>
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="newinvoicesell">
-                    <span class="oi oi-document" aria-hidden="true"></span> Nowa Faktura
-                </NavLink>
+                <BSDropdown>
+                    <BSDropdownToggle style="width: 218px" Color="Color.Success">Nowa faktura...</BSDropdownToggle>
+                    <BSDropdownMenu style="background-color:white">
+                        <BSDropdownItem style="color: #212529;" Href="newinvoicesell">sprzedaży</BSDropdownItem>
+                        <BSDropdownItem style="color: #212529;" Href="newinvoicebuy">zakupu</BSDropdownItem>
+                    </BSDropdownMenu>
+                </BSDropdown>
             </li>
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="newinvoicebuy">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Nowa Faktura
-                </NavLink>
-            </li>
+                <BSDropdown>
+                    <BSDropdownToggle style="width: 218px" Color="Color.Primary">Lista faktur...</BSDropdownToggle>
+                    <BSDropdownMenu style="background-color:white">
+                        <BSDropdownItem style="color: #212529;" Href="invoicesselllist">sprzedaży</BSDropdownItem>
+                        <BSDropdownItem style="color: #212529;" Href="invoicesbuylist">zakupu</BSDropdownItem>
+                    </BSDropdownMenu>
+                </BSDropdown>
+</li>
         </AuthorizeView>
     </ul>
 </div>
@@ -35,10 +41,35 @@
 @code {
     bool collapseNavMenu = true;
 
+    private bool IsOpenNewInvoice { get; set; } 
+    private bool IsOpenInvoicesList { get; set; }
+
+
     string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BootstrapCSS.SetBootstrapCSS("4.3.1");
+        IsOpenNewInvoice = false;
+        IsOpenInvoicesList = false;
+    }
 
     void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    void OnClickNewInvoice()
+    {
+        if (IsOpenNewInvoice == false) IsOpenNewInvoice = true;
+        else IsOpenNewInvoice = false;
+        StateHasChanged();
+    }
+
+    void OnClickInvoicesList()
+    {
+        if (IsOpenInvoicesList == false) IsOpenInvoicesList = true;
+        else IsOpenInvoicesList = false;
+        StateHasChanged();
     }
 }
