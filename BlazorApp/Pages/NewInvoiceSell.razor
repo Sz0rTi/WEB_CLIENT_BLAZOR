@@ -1,5 +1,4 @@
 ﻿@page "/newinvoicesell"
-@page "/newinvoicesell/{status:int}"
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
 @using Models
@@ -18,15 +17,38 @@
 }
 else
 {
-    if(status != 0)
+    if (responseInvoice != null)
     {
-        <h3 style="color:green">Faktura utworzona pomyślnie.</h3>
+        <div class="modal" tabindex="-1" style="display:block" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Wprowadzono pomyślnie!</h3>
+                        <button type="button" class="close"
+                                @onclick="ClosePopup">
+                            <span aria-hidden="true">X</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <h3> Faktura została wprowadzona pomyślnie. </h3><br />
+                        <button type="button" @onclick="@(() => ToInvoice(responseInvoice.ID))">Wyświetl fakturę</button>
+                        <button class="btn btn-primary"
+                                @onclick="ClosePopup">
+                            Ok
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
+
     <div id="main">
         <form @onsubmit="CreateInvoice">
             <div id="clientInfo" class="row">
                 <div class="col-6">
                     <table class="contact">
+                        <col style="width:35%">
+                        <col style="width:65%">
                         <tr>
                             <td>Nazwa firmy: </td>
                             <td>
@@ -67,10 +89,10 @@ else
                         </tr>
                         <tr>
                             <td>NIP </td>
-                            <td><input type="text" class="contact" id="nipIT" @bind="@ModelClientOut.NIP" required /></td>
+                            <td><input type="text" class="contact" id="nipIT" @bind="@ModelClientOut.NIP" required style="width:67%;" /><button class="btn btn-primary" type="submit" @onclick="SearchByNip" style="font-size:10px">Szukaj po NIP</button></td>
                         </tr>
                     </table>
-                    <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Szukaj po NIP</button>
+                    
                 </div>
                 <div class="col-6">
                     ebe
@@ -78,89 +100,168 @@ else
                 </div>
             </div>
 
-
-
-
             <div id="productsDIV">
-
                 <div class="alert @StatusClass">@StatusMessage</div>
-
-
                 <div id="categorySelect">
-                    <p>Kategoria:</p>
-                    <select name="categories" @onchange="SelectedCategoryChanged">
-                        <option value="-1">-----</option>
-                        @foreach (Category item in Categories)
-                        {
-                            <option value="@item.Name">@item.Name</option>
-                        }
-                    </select>
-
+                    <div>
+                        Kategoria:
+                        <select name="categories" style="display:inline;" @onchange="SelectedCategoryChanged">
+                            <option value="-1">-----</option>
+                            @foreach (Category item in Categories)
+                            {
+                                <option value="@item.Name">@item.Name</option>
+                            }
+                        </select>
+                    </div>
                 </div>
-                <div id="a">
+                </div>@*
+        <div id="a">
+            <label>
+                Wybierz produkt:<br />
+                <input type="text" name="aa" list="products" @onchange="SelectedProductChanged" autocomplete="off" />
+                <datalist id="products">
                     <label>
-                        Wybierz produkt:<br />
-                        <input type="text" name="aa" list="products" @bind="@selectedProduct" autocomplete="off" />
-                        <datalist id="products">
-
-                            <label>
-                                or select one from he list:
-                                <select name="aa">
-                                    @foreach (Product item in Products)
-                                    {
-                                        <option value="@item.Name" data-id="@item.ID" />
-                                    }
-                                </select>
-                            </label>
-
-                        </datalist>
-
+                        or select one from he list:
+                        <select name="aa">
+                            @foreach (Product item in Products)
+                            {
+                                <option value="@item.Name" data-id="@item.ID" />
+                            }
+                        </select>
                     </label>
+                </datalist>
+            </label>
+        </div>
+        @if (selectedProduct != "" && product != null)
+        {
+            <label>Na stanie: @product.Amount @unit.Name</label>
+        }
+        else
+        {
 
-                </div>
+        }
+        <br />
+        <b>Ilość: </b> <input type="number" id="amountIn" min="0" @bind="@ModelProductSell.Amount" /><br />
+        <b> Cena netto:</b> <input type="number" id="priceNettoIn" min="0" @bind="PriceNetto2" /><br />
+        <b>Marża: </b> <input type="number" id="marginIn" @bind="Margin2" /><br /><br />
+        <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
+        <br /><br />*@
 
+        <table border="1" style="width:70%">
+            <col style="width:25%">
+            <col style="width:50%">
+            <col style="width:25%">
+            <tr>
+                <td>Nazwa produktu</td>
+                <td>
+                    <div id="a">
+                        <label class="contact">
+                            <input class="contact" type="text" name="aa" style="width:100%" list="products" @onchange="SelectedProductChanged" autocomplete="off" />
+                            <datalist id="products">
+                                <label>
+                                    or select one from he list:
+                                    <select name="aa">
+                                        @foreach (Product item in Products)
+                                        {
+                                            <option value="@item.Name" data-id="@item.ID" />
+                                        }
+                                    </select>
+                                </label>
+                            </datalist>
+                        </label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Ilość</td>
+                <td><input class="contact" type="number" min="0" @bind="ModelProductSell.Amount" /></td>
+                <td>
+                    @if (selectedProduct != "" && product != null)
+                    {
+                        <label style="font-size:14px">Na stanie: @product.Amount @unit.Name</label>
+                    }
+                    else
+                    {
+
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td>Cena netto</td>
+                <td><input class="contact" type="number" min="0" @bind="ModelProductSell.PricePerItemNetto" /></td>
+            </tr>
+            <tr>
+                <td>Marża %</td>
+                <td><input class="contact" type="number" id="marginIn" @bind="Margin2" /></td>
+            </tr>
+        </table>
                 <br />
-                <b>Ilość: </b> <input type="number" id="amountIn" @bind="@ModelProductSell.Amount" />
-                <b> Cena netto:</b> <input type="number" id="priceNettoIn" @bind="PriceNetto2" />
-                <b>Marża: </b> <input type="number" id="marginIn" @bind="Margin2" />
                 <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
 
-                <table>
+
+                <table width="100%">
+                    <col style="width:34%">
+                    <col style="width:5%">
+                    <col style="width:7%">
+                    <col style="width:5%">
+                    <col style="width:10%">
+                    <col style="width:10%">
+                    <col style="width:12%">
+                    <col style="width:12%">
+                    <col style="width:5%" />
                     <thead>
                         <tr>
-                            <td><b>Nazwa</b></td>
-                            <td><b>Ilość</b></td>
-                            <td><b>J.M</b></td>
-                            <td><b>Cena</b></td>
-                            <td><b>Suma</b></td>
-                            <td></td>
+                            <th>Nazwa</th>
+                            <th>Ilość</th>
+                            <th>J.M</th>
+                            <th>Vat</th>
+                            <th>Cena netto</th>
+                            <th>Cena brutto</th>
+                            <th>Wartość netto</th>
+                            <th>Wartość brutto</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (ProductSellOut item in ProductsSell)
+                        @foreach(var item in ProductsSell)
                         {
                             <tr>
-                                <td>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</td>
-                                <td>@item.Amount</td>
-                                <td>@GetUnitName(item.UnitID)</td>
-                                <td>@item.PricePerItemNetto.ToString("N2") zł</td>
-                                <td>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</td>
-                                <td><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></td>
+                                <th>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</th>
+                                <th>@item.Amount</th>
+                                <th>@item.Unit</th>
+                                <th>@(TaxStages.Where(t=>t.ID == item.TaxStageID).First().Stage)%</th>
+                                <th>@item.PricePerItemNetto.ToString("N2") zł</th>
+                                <th>@item.PricePerItemBrutto.ToString("N2") zł</th>
+                                <th>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</th>
+                                <th>@((item.PricePerItemBrutto * item.Amount).ToString("N2")) zł</th>
+                                <th><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
                             </tr>
                         }
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td><b>Łącznie</b></td>
-                            <td><b>@(ProductsSell.Sum(s => s.PricePerItemNetto * s.Amount).ToString("N2")) zł</b></td>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th><b>Łącznie netto</b></th>
+                            <th><b>@(ProductsSell.Sum(s => s.PricePerItemNetto * s.Amount).ToString("N2")) zł</b></th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th><b>Łącznie brutto</b></th>
+                            <th><b>@(ProductsSell.Sum(s => s.PricePerItemBrutto * s.Amount).ToString("N2")) zł</b></th>
                         </tr>
                     </tfoot>
                 </table>
                 <input type="submit" value="Stwórz" />
-            </div>
         </form>
     </div>
 }
@@ -183,24 +284,30 @@ else
         StatusMessage = DateTime.Now + " Handle invalid submit";
     }
 
-    [Parameter]
-    public int status { get; set; } = 0;
     private List<Client> Clients { get; set; }
     private List<Unit> Units { get; set; }
+    private List<TaxStage> TaxStages { get; set; }
     private List<Category> Categories { get; set; }
     private List<Product> Products { get; set; }
     private List<ProductSellOut> ProductsSell { get; set; }
     private List<ProductOnList> ProductsOnList { get; set; }
+    private List<PaymentMethod> PaymentMethods { get; set; }
 
     private string selectedProduct { get; set; }
-    private string nip { get; set; }// = "8211022391";
+    private string nip { get; set; }
     private string a { get; set; }
+    private bool ShowResponseModal { get; set; } = false;
+    private bool ShowCloseModal { get; set; } = false;
+    private bool ShowNewPaymentMethodModal { get; set; } = false;
+    private bool IsPaid { get; set; } = false;
 
 
     private Client client { get; set; }
     private Category category { get; set; }
     private Product product { get; set; }
     private Unit unit { get; set; }
+    private InvoiceSell responseInvoice { get; set; }
+    private DateTime PaymentDeadline { get; set; }
 
     private ClientOut ModelClientOut = new ClientOut();
     private ProductSell ModelProductSell = new ProductSell();
@@ -234,15 +341,14 @@ else
     {
         Clients = await Http.GetJsonAsync<List<Client>>(_URL + Controller.clients);
         var user = (await authenticationStateTask).User;
-        //TU KURWA
         var savedToken = await _localStorage.GetItemAsync<string>("authToken");
         Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", savedToken);
         var unitsResult = await Http.GetAsync(_URL + Controller.units);
         if (unitsResult.IsSuccessStatusCode)
-
             Units = JsonConvert.DeserializeObject<List<Unit>>(await unitsResult.Content.ReadAsStringAsync());
         else NavigationManager.NavigateTo("/Identity/Account/Login");
-        await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
+        //await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
+        TaxStages = await Http.GetJsonAsync<List<TaxStage>>(_URL + Controller.taxstages);
         Categories = await Http.GetJsonAsync<List<Category>>(_URL + Controller.categories);
         client = new Client();
         ModelClientOut = new ClientOut();
@@ -275,14 +381,7 @@ else
         {
             selectedProduct = string.Empty;
             category = Categories.Where(c => c.Name == e.Value.ToString()).First();
-
-
-
             Products = await Http.GetJsonAsync<List<Product>>(_URL + Controller.products + "/bycategoryid/" + category.ID.ToString());
-
-            //selectedProduct = string.Empty;
-
-            //this.StateHasChanged();
         }
     }
 
@@ -296,7 +395,19 @@ else
                 unit = Units.Where(u => u.ID == product.UnitID).First();
                 selectedProduct = product.Name;
             }
+            /*else
+            {
+                selectedProduct = "";
+                product = null;
+                unit = null;
+            }*/
         }
+        /*else
+        {
+            selectedProduct = "";
+            product = null;
+            unit = null;
+        }*/
     }
 
     async Task SearchByNip(KeyboardEventArgs e)
@@ -305,7 +416,6 @@ else
         {
             string temp = ModelClientOut.NIP.Replace("-", "");
             client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + temp);
-            //this.StateHasChanged();
         }
     }
 
@@ -315,8 +425,6 @@ else
         {
             string temp = a.Replace("-", "");
             nip = ModelClientOut.NIP;
-            //ModelClientOut = new ClientOut();
-            //client = new Client();
             client = await Http.GetJsonAsync<Client>("https://localhost:5001/api/gus/" + nip);
             ModelClientOut.Name = client.Name;
             ModelClientOut.Street = client.Street;
@@ -324,7 +432,6 @@ else
             ModelClientOut.Number = client.Number;
             ModelClientOut.PostCode = client.PostCode;
             ModelClientOut.NIP = client.NIP;
-            //this.StateHasChanged();
         }
     }
 
@@ -336,15 +443,16 @@ else
             {
                 product = Products.Where(p => p.Name == selectedProduct).First();
                 unit = Units.Where(u => u.ID == product.UnitID).First();
-                var taxstage = await Http.GetJsonAsync<TaxStage>(_URL + Controller.taxstages + "/" + product.TaxStageID.ToString());
+                var taxstage = TaxStages.Where(t=>t.ID == product.TaxStageID).First().Stage;
                 ProductSellOut temp = new ProductSellOut();
                 temp.ProductID = product.ID;
                 temp.Name = product.Name;
                 temp.Amount = ModelProductSell.Amount;
                 temp.PricePerItemNetto = ModelProductSell.PricePerItemNetto;
-                temp.PricePerItemBrutto = ModelProductSell.PricePerItemNetto * (1.0 + taxstage.Stage / 100.0);
+                temp.PricePerItemBrutto = ModelProductSell.PricePerItemNetto * ((100.0 + taxstage) / 100.0);
                 temp.TaxStageID = product.TaxStageID;
                 temp.UnitID = product.UnitID;
+                temp.Unit = GetUnitName(temp.UnitID);
                 temp.BasePriceNetto = product.PriceNetto;
 
                 ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
@@ -362,7 +470,6 @@ else
     {
         ProductsOnList.Remove(ProductsOnList.Where(p => p.ID == x.ProductID).First());
         ProductsSell.Remove(x);
-        //this.StateHasChanged();
     }
 
     async Task<string> GetUnit(Guid id)
@@ -373,11 +480,7 @@ else
 
     string GetUnitName(Guid id)
     {
-        foreach (Unit item in Units)
-        {
-            if (item.ID == id) return item.Name;
-        }
-        return "BŁĄD";
+        return Units.Where(u => u.ID == id).First().Name;
     }
 
     async Task CreateInvoice()
@@ -394,14 +497,15 @@ else
             temp.IsPaid = false;
             temp.PaymentDeadline = DateTime.Now;
             temp.PriceNetto = ProductsSell.Sum(p => p.Amount * p.PricePerItemNetto);
+            temp.PriceBrutto = ProductsSell.Sum(p => p.Amount * p.PricePerItemBrutto);
             temp.ProductsSell = ProductsSell;
             temp.PriceBrutto = 0.0;
             foreach (var item in ProductsSell)
             {
                 temp.PriceBrutto += item.PricePerItemBrutto * item.Amount;
             }
-            InvoiceSell response = await Http.PostJsonAsync<InvoiceSell>(_URL + Controller.invoicesells, temp);
-            NavigationManager.NavigateTo($"/newinvoicesell/1");
+            responseInvoice = await Http.PostJsonAsync<InvoiceSell>(_URL + Controller.invoicesells, temp);
+            ShowResponseModal = true;
         }
     }
 
@@ -419,18 +523,15 @@ else
             Margin = Math.Round(((ModelProductSell.PricePerItemNetto / temp.PriceNetto) * 100.0) - 100.0, 1);
     }
 
-
-
-
-    /*public enum Controller
+    void ClosePopup()
     {
-        categories,
-        clients,
-        products,
-        invoicesells,
-        invoicebuys,
-        units,
-        taxstages
-    }*/
+        ShowResponseModal = false;
+        NavigationManager.NavigateTo("/newinvoicesell", true);
+    }
 
+    void ToInvoice(Guid id)
+    {
+        ShowResponseModal = false;
+        NavigationManager.NavigateTo("/invoiceselldetails/" + id.ToString());
+    }
 }

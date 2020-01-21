@@ -16,6 +16,7 @@ namespace BlazorApp.Models.Out
         public double PricePerItemNetto { get; set; }
         public double PricePerItemBrutto { get; set; }
         public double BasePriceNetto { get; set; }
+        public string Unit { get; set; }
         public Guid TaxStageID { get; set; }
         public Guid UnitID { get; set; }
     }

@@ -14,31 +14,28 @@
 }
 else
 {
-    <button class="btn btn-primary"
-            @onclick="ShowResponse">
-        Add New</button>
+    <div>
+    <h3 style="display:inline-block;">Numer faktury: </h3>
+        <input type="text" style="display:inline-block;" @bind="code" required /> 
+    </div>
 
         @if (ShowResponseModal)
         {
             if (responseInvoice != null)
             {
-                <!-- This is the popup to create or edit a forecast -->
                 <div class="modal" tabindex="-1" style="display:block" role="dialog">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h3 class="modal-title">Wprowadzono pomyślnie!</h3>
-                                <!-- Button to close the popup -->
                                 <button type="button" class="close"
                                         @onclick="ClosePopup">
                                     <span aria-hidden="true">X</span>
                                 </button>
                             </div>
-                            <!-- Edit form for the current forecast -->
                             <div class="modal-body">
                                 <h3> Faktura została wprowadzona pomyślnie. </h3><br />
                                 <button type="button" @onclick="@(() => ToInvoice(responseInvoice.ID))">Wyświetl fakturę</button>
-                                <!-- Button to save the forecast -->
                                 <button class="btn btn-primary"
                                         @onclick="ClosePopup">
                                     Ok
@@ -51,106 +48,69 @@ else
         }
 
         <div id="main">
-            @if (seller == null)
-            {
-                <div id="sellerInfo">
-                    <EditForm Model="@ModelSellerOut">
-
-                        <div class="alert @StatusClass">@StatusMessage</div>
-
-                        <DataAnnotationsValidator />
-
-
-                        <b>Nazwa firmy: </b>
-                        <label>
-                            Wybierz firmę:<br />
-                            <input type="text" name="seller" list="sellers" @onchange="SelectedSellerChanged" />
-                            <datalist id="sellers">
-
-                                <label>
-                                    or select one from the list:
-                                    <select name="sellers">
-                                        @foreach (Seller item in Sellers)
-                                        {
-                                            <option value="@item.Name" data-id="@item.ID" />
-                                        }
-                                    </select>
-                                </label>
-
-                            </datalist>
-
-                        </label>
-
-                        <br /><b>Ulica: </b>
-                        <InputText id="street" @bind-Value="@ModelSellerOut.Street" />
-                        <ValidationMessage For="@(() => ModelSellerOut.Street)" />
-                        <br /><b>Numer: </b>
-                        <InputText id="number" @bind-Value="@ModelSellerOut.Number" />
-                        <ValidationMessage For="@(() => ModelSellerOut.Number)" />
-                        <br /><b>Kod pocztowy: </b>
-                        <InputText id="postcode" @bind-Value="@ModelSellerOut.PostCode" />
-                        <ValidationMessage For="@(() => ModelSellerOut.PostCode)" />
-                        <br /><b>NIP: </b>
-                        @*<input id=nipinput @bind="@nip" />*@
-                        <InputText id="nipIT" @bind-Value="@ModelSellerOut.NIP" />
-                        <ValidationMessage For="@(() => ModelSellerOut.NIP)" />
-                        <button class="btn btn-primary" style="text-align: right" type="submit" @onclick="SearchByNip">Click me</button>
-
-                    </EditForm>
+            <div id="clientInfo" class="row">
+                <div class="col-6">
+                    <table class="contact">
+                        <col style="width:35%">
+                        <col style="width:65%">
+                        <tr>
+                            <td>Nazwa firmy: </td>
+                            <td>
+                                @if (Sellers.Count == 0)
+                                {
+                                    <input class="contact" type="text" @bind-value="seller.Name" @bind-value:event="SelectedClientChanged" required />
+                                }
+                                else
+                                {
+                                    <label class="contact">
+                                        <input class="contact" type="text" name="seller" list="sellers" @onchange="SelectedSellerChanged" value="@ModelSellerOut.Name" />
+                                        <datalist id="sellers">
+                                            <label>
+                                                or select one from the list:
+                                                <select name="clients">
+                                                    @foreach (Seller item in Sellers)
+                                                    {
+                                                        <option value="@item.Name" data-id="@item.ID" />
+                                                    }
+                                                </select>
+                                            </label>
+                                        </datalist>
+                                    </label>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Ulica </td>
+                            <td><input type="text" class="contact" id="street" @bind="@ModelSellerOut.Street" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Numer </td>
+                            <td><input type="text" class="contact" id="number" @bind="@ModelSellerOut.Number" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Kod pocztowy </td>
+                            <td><input type="text" class="contact" id="postcode" @bind="@ModelSellerOut.PostCode" required /></td>
+                        </tr>
+                        <tr>
+                            <td>NIP </td>
+                            <td><input type="text" class="contact" id="nipIT" @bind="@ModelSellerOut.NIP" required style="width:67%;" /><button class="btn btn-primary" type="submit" @onclick="SearchByNip" style="font-size:10px">Szukaj po NIP</button></td>
+                        </tr>
+                    </table>
                 </div>
-
-            }
-            else
-            {
-                <div id="sellerInfo">
-                    <EditForm Model="@ModelSellerOut">
-
-                        <div class="alert @StatusClass">@StatusMessage</div>
-
-                        <DataAnnotationsValidator />
-
-
-                        <b>Nazwa firmy: </b>
-                        <label>
-                            Wybierz firmę:<br />
-                            <input type="text" name="seller" list="sellers" @onchange="SelectedSellerChanged" value="@ModelSellerOut.Name" />
-                            <datalist id="sellers">
-
-                                <label>
-                                    or select one from the list:
-                                    <select name="sellers">
-                                        @foreach (Seller item in Sellers)
-                                        {
-                                            <option value="@item.Name" data-id="@item.ID" />
-                                        }
-                                    </select>
-                                </label>
-
-                            </datalist>
-
-                        </label>
-
-                        <br /><b>Ulica: </b>
-                        <InputText id="street" @bind-Value="@ModelSellerOut.Street" />
-                        <ValidationMessage For="@(() => ModelSellerOut.Street)" />
-                        <br /><b>Numer: </b>
-                        <InputText id="number" @bind-Value="@ModelSellerOut.Number" />
-                        <ValidationMessage For="@(() => ModelSellerOut.Number)" />
-                        <br /><b>Kod pocztowy: </b>
-                        <InputText id="postcode" @bind-Value="@ModelSellerOut.PostCode" />
-                        <ValidationMessage For="@(() => ModelSellerOut.PostCode)" />
-                        <br /><b>NIP: </b>
-                        @*<input id=nipinput @bind="@nip" />*@
-                        <InputText id="nipIT" @bind-Value="@ModelSellerOut.NIP" />
-                        <ValidationMessage For="@(() => ModelSellerOut.NIP)" />
-                        <button class="btn btn-primary" type="submit" @onclick="SearchByNip">Click me</button>
-
-                    </EditForm>
+                <div class="col-6">
+                    Rodzaj płatności: 
+                        <select @bind="paymentMethod">
+                            @foreach(var item in PaymentMethods)
+                            {
+                                <option value="@item.ID">@item.Name</option>
+                            }
+                        </select>
+                    <br />
+                    Termin płatności: 
+                    <input style="display:inline-block" type="date" min="@DateTime.Now" @bind="paymentDeadline"/><br />
+                    Zapłacona? <input type="checkbox" @onchange="IsPaidChanged" />
                 </div>
-
-
-
-            }
+            </div>
 
             <div id="productsDIV">
                 <EditForm Model="@ModelProductBuy" OnValidSubmit="CreateInvoice">
@@ -158,14 +118,14 @@ else
                     <div class="alert @StatusClass">@StatusMessage</div>
 
                     <DataAnnotationsValidator />
-                    Kategoria:<br />
+                    Kategoria: 
                     @if (Categories.Count == 0)
                     {
-                        <a href="newcategory">Dodaj kategorię</a>
+                        <button type="button" @onclick="@(()=>ShowNewCategoryModal = true)">Nowa kategoria</button>
                     }
                     else
                     {
-                <div id="categorySelect">
+                    <div id="categorySelect">
 
                     <select name="categories" @onchange="SelectedCategoryChanged">
                         <option value="-1">-----</option>
@@ -176,7 +136,7 @@ else
                     </select>
 
                     <button type="button" @onclick="@(()=>ShowNewCategoryModal = true)">Nowa kategoria</button>
-
+                        <br /><br />
                     @if (ShowNewCategoryModal == true)
                     {
                         <div class="modal" tabindex="-1" style="display:block;" role="dialog">
@@ -199,148 +159,157 @@ else
                             </div>
                         </div>
                     }
-                </div>
+                    </div>
                     }
-                    @if (Products.Count == 0)
-                    {
-                        <p>Nazwa produktu: </p>
-                        <input type="text" @bind="selectedProduct" />
-                    }
-                    else
-                    {
-                        <div id="a">
-                            <label>
-                                Wybierz produkt:<br />
-                                <input type="text" name="aa" list="products" @onchange="SelectedProductChanged" autocomplete="off" />
-                                <datalist id="products">
-
-                                    <label>
-                                        or select one from he list:
-                                        <select name="aa">
-                                            @foreach (Product item in Products)
-                                            {
-                                                <option value="@item.Name" data-id="@item.ID" />
-                                            }
-                                        </select>
-                                    </label>
-
-                                </datalist>
-
-                            </label>
-
-                        </div>
-                    }
-                    <br />
-
-                    @if (selectedProduct.Length > 5)
-                    {
-                        if (!Products.Any(p => p.Name == selectedProduct))
-                        {
-                            <br /><p>Jednostka miary:</p>
-                            if (Units.Count == 0)
+                <table border="1" style="width:50%">
+                    <col style="width:30%">
+                    <col style="width:70%">
+                    <tr>
+                        <td>Nazwa produktu</td>
+                        <td>
+                            @if (Products.Count == 0)
                             {
-                                <p>Nazwa J.M: </p>
-                                <input type="text" @bind="selectedUnit" />
+                                <input class="contact" type="text" @bind="selectedProduct" style="width:100%" />
                             }
                             else
                             {
-                                <div id="b">
-                                    <label>
-                                        <input type="text" list="units" @bind="@selectedUnit" autocomplete="off" />
-                                        <datalist id="units">
-
+                                <div id="a">
+                                    <label class="contact">
+                                        <input class="contact" type="text" name="aa" style="width:100%" list="products" @bind="selectedProduct" autocomplete="off" />
+                                        <datalist id="products">
                                             <label>
                                                 or select one from he list:
-                                                <select>
-                                                    @foreach (Unit item in Units)
+                                                <select name="aa">
+                                                    @foreach (Product item in Products)
                                                     {
                                                         <option value="@item.Name" data-id="@item.ID" />
                                                     }
                                                 </select>
                                             </label>
-
                                         </datalist>
-
                                     </label>
-
                                 </div>
                             }
-                            <br />
-                            <p>Stawka VAT:</p><br />
-                            if (TaxStages.Count == 0)
-                            {
-                                <input type="text" @bind="selectedTaxStage" /><p>%</p>
-                            }
-                            else
-                            {
-                                <div id="c">
-                                    <label>
-                                        <input type="text" list="taxstages" @bind="@selectedTaxStage" autocomplete="off" />
-                                        <datalist id="taxstages">
+                        </td>
+                    </tr>
+                    @if (selectedProduct.Length > 3)
+                    {
+                        @if (!Products.Any(p => p.Name == selectedProduct))
+                        {
+                            <tr>
+                                <td>Jednostka miary</td>
+                                <td>
+                                    @if (Units.Count == 0)
+                                    {
+                                        <input class="contact" type="text" @bind="selectedUnit" style="width:100%" />
+                                    }
+                                    else
+                                    {
+                                        <div id="b">
+                                            <label class="contact">
+                                                <input class="contact" type="text" list="units" @bind="@selectedUnit" autocomplete="off" style="width:100%" />
+                                                <datalist id="units">
 
-                                            <label>
-                                                or select one from he list:
-                                                <select>
-                                                    @foreach (TaxStage item in TaxStages)
-                                                    {
-                                                        <option value="@item.Stage.ToString()" data-id="@item.ID" />
-                                                    }
-                                                </select>
+                                                    <label style="width:100%">
+                                                        or select one from he list:
+                                                        <select style="width:100%">
+                                                            @foreach (Unit item in Units)
+                                                            {
+                                                                <option value="@item.Name" data-id="@item.ID" />
+                                                            }
+                                                        </select>
+                                                    </label>
+
+                                                </datalist>
+
                                             </label>
 
-                                        </datalist>
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Stawka VAT w %</td>
+                                <td>
+                                    @if (TaxStages.Count == 0)
+                                    {
+                                        <input class="contact" type="text" @bind="selectedTaxStage" style="width:100%" /><b>%</b>
+                                    }
+                                    else
+                                    {
+                                        <div id="c">
+                                            <label class="contact">
+                                                <input class="contact" type="text" list="taxstages" @bind="@selectedTaxStage" autocomplete="off" style="width:100%" />
+                                                <datalist id="taxstages">
 
-                                    </label>
+                                                    <label>
+                                                        or select one from he list:
+                                                        <select>
+                                                            @foreach (TaxStage item in TaxStages)
+                                                            {
+                                                                <option value="@item.Stage.ToString()" data-id="@item.ID" />
+                                                            }
+                                                        </select>
+                                                    </label>
 
-                                </div>
-                            }
+                                                </datalist>
+
+                                            </label>
+
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
                         }
                     }
-
-
+                    <tr>
+                        <td>Ilość</td>
+                        <td><input class="contact" type="number" @bind="ModelProductBuy.Amount"/></td>
+                    </tr>
+                    <tr>
+                        <td>Cena netto</td>
+                        <td><input class="contact" type="number" @bind="ModelProductBuy.PricePerItemNetto"/></td>
+                    </tr>
+                </table>   
                     <br />
-                    <b>Ilość: </b> <InputNumber id="amountIn" @bind-Value="@ModelProductBuy.Amount" />
-                    <ValidationMessage For="@(() => ModelProductBuy.Amount)" />
-                    <b> Cena netto:</b> <InputNumber id="priceNettoIn" @bind-Value="@ModelProductBuy.PricePerItemNetto" />
-                    <ValidationMessage For="@(() => ModelProductBuy.PricePerItemNetto)" />
-
-                    @*<button class="btn btn-primary" @onclick="AddProductSell">Dodaj</button>*@
                     <input type="button" @onclick="@(()=>AddProductSell())" value="Dodaj" />
-
+                    <br /><br />
                     <table width="100%">
+                        <col style="width:34%">
                         <col style="width:5%">
-                        <col style="width:40%">
+                        <col style="width:7%">
                         <col style="width:5%">
                         <col style="width:10%">
-                        <col style="width:5%">
-                        <col style="width:15%">
-                        <col style="width:15%">
+                        <col style="width:10%">
+                        <col style="width:12%">
+                        <col style="width:12%">
                         <col style="width:5%" />
                         <thead>
                             <tr>
-                                <th>L.p.</th>
                                 <th>Nazwa</th>
                                 <th>Ilość</th>
                                 <th>J.M</th>
                                 <th>Vat</th>
-                                <th>Cena</th>
-                                <th>Suma</th>
+                                <th>Cena netto</th>
+                                <th>Cena brutto</th>
+                                <th>Wartość netto</th>
+                                <th>Wartość brutto</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @for(int i=1;i<= ProductsBuy.Count;i++)
+                            @foreach (var item in ProductsBuy)
                             {
                                 <tr>
-                                    <th>@i.</th>
-                                    <th>@ProductsOnList.Where(p => p.ID == ProductsBuy[i-1].ProductID).First().Name</th>
-                                    <th>@ProductsBuy[i-1].Amount</th>
-                                    @*<th>@GetUnitName(item.UnitID)</th>*@
-                                    <th>@ProductsBuy[i-1].Unit</th>
-                                    <th>@(TaxStages.Where(t => t.ID == ProductsBuy[i-1].TaxStageID).First().Stage.ToString())%</th>
-                                    <th>@ProductsBuy[i-1].PricePerItemNetto.ToString("N2") zł</th>
-                                    <th>@((ProductsBuy[i-1].PricePerItemNetto * ProductsBuy[i-1].Amount).ToString("N2")) zł</th>
-                                    <th><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(ProductsBuy[i-1]))">Usuń</button></th>
+                                    <th>@ProductsOnList.Where(p => p.ID == item.ProductID).First().Name</th>
+                                    <th>@item.Amount</th>
+                                    <th>@item.Unit</th>
+                                    <th>@(TaxStages.Where(t => t.ID == item.TaxStageID).First().Stage)%</th>
+                                    <th>@item.PricePerItemNetto.ToString("N2") zł</th>
+                                    <th>@item.PricePerItemBrutto.ToString("N2") zł</th>
+                                    <th>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</th>
+                                    <th>@((item.PricePerItemBrutto * item.Amount).ToString("N2")) zł</th>
+                                    <th><button type="button" class="bg-warning" @onclick="@(()=>DeleteProductSell(item))">Usuń</button></th>
                                 </tr>
                             }
                         </tbody>
@@ -351,16 +320,25 @@ else
                                 <th></th>
                                 <th></th>
                                 <th></th>
-                                <th><b>Łącznie</b></th>
+                                <th></th>
+                                <th><b>Łącznie netto</b></th>
                                 <th><b>@(ProductsBuy.Sum(s => s.PricePerItemNetto * s.Amount).ToString("N2")) zł</b></th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th><b>Łącznie brutto</b></th>
+                                <th><b>@(ProductsBuy.Sum(s => s.PricePerItemBrutto * s.Amount).ToString("N2")) zł</b></th>
                             </tr>
                         </tfoot>
                     </table>
-                    <input type="submit" value="Stwórz" />
+                    <input type="submit" value="Stwórz" style="float:right" />
                 </EditForm>
             </div>
-            @*<button type="submit" @onclick="CreateInvoice">Stwórz</button>*@
-
 
         </div>
         }
@@ -392,22 +370,28 @@ else
             private List<TaxStage> TaxStages { get; set; }
             private List<ProductBuyOut> ProductsBuy { get; set; }
             private List<ProductOnList> ProductsOnList { get; set; }
+            private List<PaymentMethod> PaymentMethods { get; set; }
 
             private string selectedProduct { get; set; }
             private string selectedUnit { get; set; }
             private string selectedTaxStage { get; set; }
-            private string nip { get; set; }// = "8211022391";
+            private string nip { get; set; }
             private bool ShowResponseModal { get; set; } = false;
             private bool ShowNewCategoryModal { get; set; } = false;
+            private bool ShowNewPaymentMethodModal { get; set; } = false;
+            private bool IsPaid { get; set; } = false;
             private string a { get; set; }
             private InvoiceBuy responseInvoice { get; set; }
             private string newCategoryName { get; set; }
+            private string code { get; set; }
+            private string paymentMethod { get; set; }
 
 
             private Seller seller { get; set; }
             private Category category { get; set; }
             private Product product { get; set; }
             private Unit unit { get; set; }
+            private DateTime paymentDeadline { get; set; } = DateTime.Now;
 
             private SellerOut ModelSellerOut = new SellerOut();
             private ProductBuy ModelProductBuy = new ProductBuy();
@@ -425,6 +409,7 @@ else
                 Units = await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
                 Categories = await Http.GetJsonAsync<List<Category>>(_URL + Controller.categories);
                 TaxStages = await Http.GetJsonAsync<List<TaxStage>>(_URL + Controller.taxstages);
+                PaymentMethods = await Http.GetJsonAsync<List<PaymentMethod>>(_URL + Controller.payment);
                 seller = new Seller();
                 ModelSellerOut = new SellerOut();
                 Products = new List<Product>();
@@ -442,16 +427,13 @@ else
                 if (Sellers.Any(c => c.Name == e.Value.ToString()))
                 {
                     seller = Sellers.Where(c => c.Name == e.Value.ToString()).First();
-                    //Seller = Sellers.Where(c => c.Name == ModelSellerOut.Name).First();
                     nip = seller.NIP;
                     ModelSellerOut.Name = seller.Name;
-                    //e.Value = Seller.Name;
                     ModelSellerOut.Street = seller.Street;
                     ModelSellerOut.City = seller.City;
                     ModelSellerOut.Number = seller.Number;
                     ModelSellerOut.PostCode = seller.PostCode;
                     ModelSellerOut.NIP = seller.NIP;
-                    //this.StateHasChanged();
                 }
             }
 
@@ -461,31 +443,17 @@ else
                 {
                     selectedProduct = string.Empty;
                     category = Categories.Where(c => c.Name == e.Value.ToString()).First();
-
-
-
                     Products = await Http.GetJsonAsync<List<Product>>(_URL + Controller.products + "/bycategoryid/" + category.ID.ToString());
-
-                    //selectedProduct = string.Empty;
-
-                    //this.StateHasChanged();
                 }
             }
 
             async Task SelectedProductChanged(ChangeEventArgs e)
             {
-                if ((string)e.Value != "" || e.Value.ToString().Length > 5)
-                {
-                    /*if (Products.Any(p => p.Name == e.Value.ToString()))
-                    {
-                        product = Products.Where(p => p.Name == e.Value.ToString()).First();
-                        unit = Units.Where(u => u.ID == product.UnitID).First();*/
-                    //selectedUnit = unit.Name;
-                    //selectedTaxStage = TaxStages.Where(t => t.ID == product.TaxStageID).First().Stage.ToString();
-                    selectedProduct = e.Value.ToString();
-                    StateHasChanged();
-                    //}
-                }
+                //if ((string)e.Value != "" || e.Value.ToString().Length > 4)
+                //{
+                selectedProduct = e.Value.ToString();
+                StateHasChanged();
+                //}
             }
 
             async Task SelectedUnitChanged(ChangeEventArgs e)
@@ -510,7 +478,6 @@ else
                 {
                     string temp = ModelSellerOut.NIP.Replace("-", "");
                     seller = await Http.GetJsonAsync<Seller>("https://localhost:5001/api/gus/" + temp);
-                    //this.StateHasChanged();
                 }
             }
 
@@ -520,8 +487,6 @@ else
                 {
                     string temp = a.Replace("-", "");
                     nip = ModelSellerOut.NIP;
-                    //ModelSellerOut = new SellerOut();
-                    //Seller = new Seller();
                     seller = await Http.GetJsonAsync<Seller>("https://localhost:5001/api/gus/" + nip);
                     ModelSellerOut.Name = seller.Name;
                     ModelSellerOut.Street = seller.Street;
@@ -535,7 +500,6 @@ else
 
             async Task AddProductSell()
             {
-                //if(selectedProduct != string.Empty)
                 {
                     if (ModelProductBuy.Amount != 0 && ModelProductBuy.PricePerItemNetto != 0)
                     {
@@ -587,7 +551,7 @@ else
                             temp.Amount = (int)ModelProductBuy.Amount;
                             temp.Unit = GetUnitName(newProduct.UnitID);
                             temp.PricePerItemNetto = (double)ModelProductBuy.PricePerItemNetto;
-                            temp.PricePerItemBrutto = tempProduct.PriceNetto * ((tax.Stage + 100.0) / 100.0);
+                            temp.PricePerItemBrutto = temp.PricePerItemNetto * ((TaxStages.Where(t=>t.ID==temp.TaxStageID).First().Stage + 100.0) / 100.0);
                             product = tempProduct;
                         }
                         else
@@ -604,22 +568,22 @@ else
                             temp.UnitID = product.UnitID;
                             temp.Unit = GetUnitName(temp.UnitID);
                         }
-                        ProductsOnList.Add(new ProductOnList { ID = product.ID, Name = product.Name });
+                        ProductsOnList.Add(new ProductOnList { ID = temp.ProductID, Name = product.Name });
                         ProductsBuy.Add(temp);
                         selectedProduct = "";
                         selectedTaxStage = "";
                         selectedUnit = "";
                         ModelProductBuy.Amount = 0;
                         ModelProductBuy.PricePerItemNetto = double.Parse("0");
+                        StateHasChanged();
                     }
                 }
             }
 
             void DeleteProductSell(ProductBuyOut x)
             {
-                ProductsOnList.Remove(ProductsOnList.Where(p => p.ID == x.ProductID).First());
+                ProductsOnList.Remove(ProductsOnList.Where(p=>p.ID == x.ProductID).First());
                 ProductsBuy.Remove(x);
-                //this.StateHasChanged();
             }
 
             async Task<string> GetUnit(Guid id)
@@ -631,16 +595,11 @@ else
             string GetUnitName(Guid id)
             {
                 return Units.Where(u => u.ID == id).First().Name;
-                /*foreach (Unit item in Units)
-                {
-                    if (item.ID == id) return item.Name;
-                }
-                return "BŁĄD";*/
             }
 
             async Task CreateInvoice()
             {
-                if (ModelSellerOut != null && ModelProductBuy != null && ProductsBuy.Count > 0 && ProductsOnList.Count > 0)
+                if (ModelSellerOut != null && ModelProductBuy != null && ProductsBuy.Count > 0 && ProductsOnList.Count > 0 && code != "")
                 {
                     InvoiceBuyOut temp = new InvoiceBuyOut();
                     if (Sellers.Any(c => c.NIP == ModelSellerOut.NIP)) temp.SellerID = Sellers.Where(c => c.NIP == ModelSellerOut.NIP).First().ID;
@@ -649,6 +608,23 @@ else
                         Seller SellerTemp = await Http.PostJsonAsync<Seller>(_URL + Controller.Sellers, ModelSellerOut);
                         temp.SellerID = SellerTemp.ID;
                     }
+                    PaymentMethod payment = new PaymentMethod();
+                    if (paymentMethod != "")
+                    {
+                        payment = PaymentMethods.Where(u => u.Name == paymentMethod).FirstOrDefault();
+                        if (payment == null)
+                        {
+                            payment = await Http.PostJsonAsync<PaymentMethod>(_URL + Controller.payment, new PaymentMethodOut { Name = paymentMethod });
+                            temp.PaymentMethodID = payment.ID;
+                            PaymentMethods.Add(payment);
+                        }
+                        else
+                        {
+                            temp.PaymentMethodID = payment.ID;
+                        }
+                    }
+                    temp.IsPaid = IsPaid;
+                    temp.Code = code;
                     temp.IsPaid = false;
                     temp.PaymentDeadline = DateTime.Now;
                     temp.PriceNetto = ProductsBuy.Sum(p => p.Amount * p.PricePerItemNetto);
@@ -670,7 +646,6 @@ else
 
             void ShowResponse()
             {
-                // Open the Popup
                 ShowResponseModal = true;
             }
 
@@ -702,6 +677,11 @@ else
                 NavigationManager.NavigateTo("/invoicebuydetails/"+id.ToString());
             }
 
+            async Task IsPaidChanged(ChangeEventArgs e)
+            {
+                IsPaid = (bool)e.Value;
+            }
+
 
             public enum Controller
             {
@@ -710,6 +690,7 @@ else
                 products,
                 invoicesells,
                 invoicebuys,
+                payment,
                 units,
                 taxstages
             }

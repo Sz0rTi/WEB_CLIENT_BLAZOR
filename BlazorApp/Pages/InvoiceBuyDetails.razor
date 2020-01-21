@@ -5,7 +5,8 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-@if(Invoice == null) {
+@if (Invoice == null)
+{
     <h2>Ładowanie...</h2>
 }
 else
@@ -50,13 +51,13 @@ else
             </table>
         </div>
     </div>
-
+    <br />
     <table width="100%">
-    <col style="width:5%">
-    <col style="width:50%">
-    <col style="width:15%">
-    <col style="width:15%">
-    <col style="width:15%">
+        <col style="width:5%">
+        <col style="width:50%">
+        <col style="width:15%">
+        <col style="width:15%">
+        <col style="width:15%">
         <tr>
             <th>L.p.</th>
             <th>Nazwa towaru</th>
@@ -65,18 +66,20 @@ else
             <th>Cena</th>
             <th>Wartość netto</th>
         </tr>
-        @for(int i = 1;i <= Invoice.ProductsBuy.Count; i++)
+        @for (int i = 1; i <= Invoice.ProductsBuy.Count; i++)
         {
             <tr>
                 <td>@i.</td>
-                <td>@Invoice.ProductsBuy[i-1].Name</td>
-                <td>@GetUnitName(Invoice.ProductsBuy[i-1].UnitID)</td>
-                <td>@Invoice.ProductsBuy[i-1].Amount</td>
-                <td>@(Invoice.ProductsBuy[i-1].PricePerItemNetto.ToString("N2"))zł</td>
-                <td>@((Invoice.ProductsBuy[i-1].PricePerItemNetto * Invoice.ProductsBuy[i-1].Amount).ToString("N2"))zł</td>
+                <td>@Invoice.ProductsBuy[i - 1].Name</td>
+                <td>@GetUnitName(Invoice.ProductsBuy[i - 1].UnitID)</td>
+                <td>@Invoice.ProductsBuy[i - 1].Amount</td>
+                <td>@(Invoice.ProductsBuy[i - 1].PricePerItemNetto.ToString("N2"))zł</td>
+                <td>@((Invoice.ProductsBuy[i - 1].PricePerItemNetto * Invoice.ProductsBuy[i - 1].Amount).ToString("N2"))zł</td>
             </tr>
         }
     </table>
+    <br />
+    <button type="button" class="btn btn-primary" @onclick="@( ()=>NavigationManager.NavigateTo("invoicesbuylist") )">Wróć do listy</button>
 }
 
 @code {
@@ -99,7 +102,7 @@ else
         Unit temp = await Http.GetJsonAsync<Unit>(_URL + Controller.units + "/byproductid/" + id.ToString());
         return temp.Name;
     }
-    
+
     string GetUnitName(Guid id)
     {
         foreach (Unit item in Units)
