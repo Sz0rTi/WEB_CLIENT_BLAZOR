@@ -4,6 +4,8 @@
 
 <h3>Witamy w systemie fakturowania!</h3>
 
+<button type="button" @onclick="Summary">SUMMARY</button>
+
 
 @code{
     const string _URL = "https://localhost:5001/api/";
@@ -16,5 +18,10 @@
     async void GetPDF()
     {
 
+    }
+
+    async void Summary()
+    {
+        var temp = await Http.PostJsonAsync<Summary>(_URL + Controller.summaries, new InvoicesDate { Month = 1, Year = 2020 }); 
     }
 }
