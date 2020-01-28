@@ -1,0 +1,160 @@
+﻿@page "/products"
+@attribute [Authorize]
+@using Models
+@using Models.Out
+@using System.Globalization
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+@if (ShowEditModal == true)
+{
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content" style="background-color:lightgrey">
+                <div class="modal-header">
+                    <h3 class="modal-title">Wprowadzono pomyślnie!</h3>
+                    <button type="button" class="close"
+                            @onclick="@(()=>ShowEditModal=false)">
+                        <span aria-hidden="true">X</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h4>Podaj opis:</h4><br />
+                        <form @onsubmit="Edit">
+                            <input type="text" @bind="description" required/>
+                            <button type="submit" @onclick="Edit">Zapisz</button>
+                        </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@if (ProductsList == null)
+{
+    <h3>Ładowanie...</h3>
+}
+else if (ProductsList.Count == 0)
+{
+    <h4>Brak produktów!</h4>
+}
+else
+{
+    <h4>Wybierz produkt: </h4>
+    <label class="contact">
+        <input class="contact" type="text" name="Product" list="Products" @onchange="SelectedSellerChanged" value="@selectedProduct" />
+        <datalist id="Products">
+            <label>
+                or select one from the list:
+                <select name="Sellers">
+                    @foreach (Product item in ProductsList)
+                    {
+                        <option value="@item.Name" data-id="@item.ID" />
+                    }
+                </select>
+            </label>
+        </datalist>
+    </label>
+
+    @if (product != null)
+    {
+        <table style="width:60%">
+            <tr>
+                <td>Nazwa produktu</td>
+                <td>@product.Name</td>
+            </tr>
+            <tr>
+                <td>Ilość</td>
+                <td>@product.Amount</td>
+            </tr>
+            <tr>
+                <td>J.M.</td>
+                <td>@GetUnit(product.UnitID)</td>
+            </tr>
+            <tr>
+                <td>Średnia cena zakupu</td>
+                <td>@product.PriceNetto.ToString("N2") zł</td>
+            </tr>
+            <tr>
+                <td>Stawka VAT</td>
+                <td>@GetTaxStage(product.TaxStageID)%</td>
+            </tr>
+            <tr>
+                <td>Kategoria</td>
+                <td>@GetCategory(product.CategoryID)</td>
+            </tr>
+            <tr>
+                <td>Opis</td>
+                <td>@product.Description</td>
+            </tr>
+        </table>
+        <button type="button" @onclick="@(()=>ShowEditModal=true)">Dodaj opis</button>
+    }
+}
+
+@code {
+    private List<Product> ProductsList { get; set; }
+    private List<TaxStage> TaxStages { get; set; }
+    private List<Unit> Units { get; set; }
+    private List<Category> Categories { get; set; }
+    private Product product { get; set; }
+    private string selectedProduct { get; set; }
+    private bool ShowEditModal { get; set; } = false;
+    private string description { get; set; } = "";
+    const string _URL = "https://localhost:5001/api/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductsList = await Http.GetJsonAsync<List<Product>>(_URL + Controller.products);
+        TaxStages = await Http.GetJsonAsync<List<TaxStage>>(_URL + Controller.taxstages);
+        Units = await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
+        Categories = await Http.GetJsonAsync<List<Category>>(_URL + Controller.categories);
+    }
+
+
+    async Task SelectedSellerChanged(ChangeEventArgs e)
+    {
+        selectedProduct = e.Value.ToString();
+
+        if (selectedProduct != "")
+        {
+            product = ProductsList.First(p => p.Name == selectedProduct);
+        }
+    }
+
+    async void Edit()
+    {
+        if(description != "")
+        {
+            ProductOut temp = new ProductOut
+            {
+                Name = product.Name,
+                Amount = product.Amount,
+                CategoryID = product.CategoryID,
+                Description = description,
+                PriceNetto = product.PriceNetto,
+                TaxStageID = product.TaxStageID,
+                UnitID = product.UnitID
+            };
+            product = await Http.PutJsonAsync<Product>(_URL + Controller.products, temp);
+            StateHasChanged();
+            ShowEditModal = false;
+        }
+    }
+
+    string GetTaxStage(Guid id)
+    {
+        return TaxStages.First(t => t.ID == id).Stage.ToString();
+    }
+
+    string GetUnit(Guid id)
+    {
+        return Units.First(t => t.ID == id).Name;
+    }
+
+    string GetCategory(Guid id)
+    {
+        return Categories.First(c => c.ID == id).Name;
+    }
+}
