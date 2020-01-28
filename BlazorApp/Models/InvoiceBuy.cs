@@ -9,6 +9,7 @@ namespace BlazorApp.Models
     {
         public Guid ID { get; set; }
         public string Name { get; set; }
+        public string Code { get; set; }
         public Guid SellerID { get; set; }
         public DateTime Date { get; set; }
         public DateTime PaymentDeadline { get; set; }

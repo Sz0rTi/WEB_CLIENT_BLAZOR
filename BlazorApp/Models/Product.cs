@@ -26,7 +26,9 @@ namespace BlazorApp.Models
         invoicebuys,
         login,
         units,
+        payment,
         sellers,
+        summaries,
         taxstages
     }
 }

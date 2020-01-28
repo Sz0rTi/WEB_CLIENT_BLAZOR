@@ -1,0 +1,110 @@
+﻿@page "/summarydetails/{Id}"
+@attribute [Authorize]
+@using Models
+@using Models.Out
+@using System.Globalization
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+@if(Summary == null)
+{
+
+}
+else
+{
+    <div class="row">
+        <div class="col-6">
+            <table style="width:50%">
+                <tr>
+                    <td>Okres</td>
+                    <td>@(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(Summary.Month)) @Summary.Year</td>
+                </tr>
+                <tr>
+                    <td>Data wygenerowania</td>
+                    <td>@Summary.Date.ToString()</td>
+                </tr>
+                <tr>
+                    <td>Suma zakupów</td>
+                    <td>@Summary.SumBought.ToString("N2") zł</td>
+                </tr>
+                <tr>
+                    <td>Suma sprzedaży</td>
+                    <td>@Summary.SumSold.ToString("N2") zł</td>
+                </tr>
+                <tr>
+                    <td>Suma zarobku</td>
+                    <td>@Summary.SumEarned.ToString("N2") zł</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-6">
+            <button>PDF</button><br /><br />
+            <button class="btn btn-primary" @onclick="@(()=>NavigationManager.NavigateTo("/summaries"))">Wróć do listy</button>
+        </div>
+    </div><br />
+    <div class="row">
+        <div class="col-6">
+            <h3>Zakupione towary</h3>
+            <table style="width:90%">
+                <tr>
+                    <th>Nazwa towaru</th>
+                    <th>Zakupiona ilość</th>
+                    <th>Średnia cena</th>
+                    <th>Suma zakupu</th>
+                </tr>
+                @foreach (var item in Summary.SummaryProductBuys)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.Amount</td>
+                        <td>@item.AvgBuyPrice.ToString("N2")zł</td>
+                        <td>@item.SumBought.ToString("N2")zł</td>
+                    </tr>
+                }
+            </table>
+        </div>
+
+
+        <div class="col-6">
+            <h3>Sprzedane towary</h3>
+            <table style="width:90%">
+                <tr>
+                    <th>Nazwa towaru</th>
+                    <th>Sprzedana ilość</th>
+                    <th>Średnia cena zakupu</th>
+                    <th>Średnia cena sprzedaży</th>
+                    <th>Średni zarobek</th>
+                    <th>Suma sprzedaży</th>
+                    <th>Suma zarobku</th>
+                </tr>
+                @foreach (var item in Summary.SummaryProductSells)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.Amount</td>
+                        <td>@item.AvgBuyPrice.ToString("N2")zł</td>
+                        <td>@item.AvgSellPrice.ToString("N2")zł</td>
+                        <td>@item.AvgEarn.ToString("N2")zł</td>
+                        <td>@item.SumSold.ToString("N2")zł</td>
+                        <td>@item.SumEarned.ToString("N2")zł</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    const string _URL = "https://localhost:5001/api/";
+    private Summary Summary { get; set; }
+    DateTimeFormatInfo dateinfo = new DateTimeFormatInfo();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Summary = await Http.GetJsonAsync<Summary>(_URL + Controller.summaries + "/" + Id);
+        Summary.SummaryProductBuys = Summary.SummaryProductBuys.OrderBy(s => s.ProductName).ToList();
+        Summary.SummaryProductSells = Summary.SummaryProductSells.OrderBy(s => s.ProductName).ToList();
+    }
+}

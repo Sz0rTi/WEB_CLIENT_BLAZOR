@@ -1,5 +1,6 @@
 ﻿@using BlazorStrap
 @inject IBootstrapCSS BootstrapCSS
+@inject NavigationManager NavigationManager
 
 <div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">BlazorApp</a>
@@ -33,7 +34,22 @@
                         <BSDropdownItem style="color: #212529;" Href="invoicesbuylist">zakupu</BSDropdownItem>
                     </BSDropdownMenu>
                 </BSDropdown>
-</li>
+            </li>
+            <li class="nav-item px-3">
+                <BSDropdown>
+                    <BSDropdownToggle style="width: 218px" Color="Color.Primary">Kontakty...</BSDropdownToggle>
+                    <BSDropdownMenu style="background-color:white">
+                        <BSDropdownItem style="color: #212529;" Href="clients">klienci</BSDropdownItem>
+                        <BSDropdownItem style="color: #212529;" Href="sellers">sprzedawcy</BSDropdownItem>
+                    </BSDropdownMenu>
+                </BSDropdown>
+            </li>
+            <li class="nav-item px-3">
+                <button class="btn btn-primary" style="width: 218px" @onclick="ToSummaries">Zestawienia</button>
+            </li>
+            <li class="nav-item px-3">
+                <button class="btn btn-primary" style="width: 218px" @onclick="ToProducts">Produkty</button>
+            </li>
         </AuthorizeView>
     </ul>
 </div>
@@ -41,7 +57,7 @@
 @code {
     bool collapseNavMenu = true;
 
-    private bool IsOpenNewInvoice { get; set; } 
+    private bool IsOpenNewInvoice { get; set; }
     private bool IsOpenInvoicesList { get; set; }
 
 
@@ -71,5 +87,15 @@
         if (IsOpenInvoicesList == false) IsOpenInvoicesList = true;
         else IsOpenInvoicesList = false;
         StateHasChanged();
+    }
+
+    void ToSummaries()
+    {
+        NavigationManager.NavigateTo("/summaries");
+    }
+
+    void ToProducts()
+    {
+        NavigationManager.NavigateTo("/products");
     }
 }

@@ -2,6 +2,7 @@
 @inject HttpClient  http
 @inject IAuthService _service
 @inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
 
 <h3>LogOut</h3>
 
@@ -13,6 +14,7 @@
     {
         IsLoggedOut = false;
         await _service.Logout();
+        await _localStorage.RemoveItemAsync("authToken");
         StateHasChanged();
         NavigationManager.NavigateTo("/");
     }

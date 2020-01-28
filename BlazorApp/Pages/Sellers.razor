@@ -1,0 +1,169 @@
+﻿@page "/sellers"
+@attribute [Authorize]
+@using Models
+@using Models.Out
+@using System.Globalization
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
+
+<h3>Sellers</h3>
+
+@if (SellersList == null)
+{
+    <h3>Ładowanie...</h3>
+}
+else if (SellersList.Count == 0)
+{
+    <h3>Brak sprzedawców!</h3>
+}
+else
+{
+    <h4>Wybierz sprzedawcę: </h4>
+    <label class="contact">
+        <input class="contact" type="text" name="Seller" list="Sellers" @onchange="SelectedSellerChanged" value="@selectedSeller" />
+        <datalist id="Sellers">
+            <label>
+                or select one from the list:
+                <select name="Sellers">
+                    @foreach (Seller item in SellersList)
+                    {
+                        <option value="@item.Name" data-id="@item.ID" />
+                    }
+                </select>
+            </label>
+        </datalist>
+    </label>
+
+    @if (Seller != null && Invoices != null)
+    {
+        <table style="width=70%">
+            <col style="width=10%" />
+            <col style="width=10%" />
+            <col style="width=15%" />
+            <col style="width=15%" />
+            <col style="width=15%" />
+            <tr>
+                <th>Nr faktury</th>
+                <th>Data wystawienia</th>
+                <th>Wartość netto</th>
+                <th>Wartość brutto</th>
+                <th>Zapłacona?</th>
+            </tr>
+
+            @foreach (var item in InvoicesOnPage)
+            {
+                <tr>
+                    <td><a href="invoicebuydetails/@item.ID.ToString()">@item.Code</a></td>
+                    <td>@item.Date</td>
+                    <td>@item.PriceNetto.ToString("N2") zł</td>
+                    <td>@item.PriceBrutto.ToString("N2") zł</td>
+                    @if (item.IsPaid)
+                    {
+                        <td>Zapłacona</td>
+                    }
+                    else
+                    {
+                        <td>Niezapłacona</td>
+                    }
+                </tr>
+            }
+        </table>
+        <br />
+        <nav aria-label="...">
+            <ul class="pagination justify-content-center">
+                @if (currentPage == 1)
+                {
+                    <li class="page-item disabled">
+                        <a class="page-link" aria-disabled="true">Poprzednia</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link" @onclick="@(()=>SelectedPageChanged(currentPage-1))" tabindex="-1">Poprzednia</a>
+                    </li>
+                }
+
+                @if ((currentPage - 2) >= 1)
+                {
+                    <li class="page-item"><a class="page-link" @onclick="@(()=>SelectedPageChanged(currentPage-2))">@(currentPage - 2)</a></li>
+                }
+
+                @if ((currentPage - 1) >= 1)
+                {
+                    <li class="page-item"><a class="page-link" @onclick="@(()=>SelectedPageChanged(currentPage-1))">@(currentPage - 1)</a></li>
+                }
+
+                <li class="page-item active" aria-current="page">
+                    <a class="page-link">@currentPage <span class="sr-only">(current)</span></a>
+                </li>
+
+                @if ((currentPage + 1) <= pagesCount)
+                {
+                    <li class="page-item"><a class="page-link" @onclick="@(()=>SelectedPageChanged(currentPage+1))">@(currentPage + 1)</a></li>
+                }
+
+                @if ((currentPage + 2) <= pagesCount)
+                {
+                    <li class="page-item"><a class="page-link" @onclick="@(()=>SelectedPageChanged(currentPage+2))">@(currentPage + 2)</a></li>
+                }
+
+
+                @if (currentPage == pagesCount)
+                {
+                    <li class="page-item disabled">
+                        <a class="page-link" aria-disabled="true">Następna</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link" aria-disabled="false" @onclick="@(()=>SelectedPageChanged(currentPage+1))">Następna</a>
+                    </li>
+                }
+
+            </ul>
+        </nav>
+    }
+}
+
+@code {
+    private List<Seller> SellersList { get; set; }
+    private string selectedSeller { get; set; }
+    private Seller Seller { get; set; }
+    private List<InvoiceBuy> Invoices { get; set; } = new List<InvoiceBuy>();
+    private List<InvoiceBuy> InvoicesOnPage { get; set; } = new List<InvoiceBuy>();
+    const string _URL = "https://localhost:5001/api/";
+    private int pagesCount { get; set; }
+    private int currentPage { get; set; } = 1;
+    private int itemsPerPage { get; set; } = 5;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SellersList = await Http.GetJsonAsync<List<Seller>>(_URL + Controller.sellers);
+        SellersList = SellersList.OrderBy(c => c.Name).ToList();
+    }
+
+    async Task SelectedSellerChanged(ChangeEventArgs e)
+    {
+        selectedSeller = e.Value.ToString();
+        if (selectedSeller != "")
+        {
+            Seller = SellersList.Where(c => c.Name == selectedSeller).First();
+            Invoices = await Http.GetJsonAsync<List<InvoiceBuy>>(_URL + Controller.invoicebuys + "/bysellerid/" + Seller.ID.ToString());
+            Invoices = Invoices.OrderByDescending(i => i.Date).ToList();
+            currentPage = 1;
+            pagesCount = Invoices.Count / itemsPerPage;
+            if ((Invoices.Count % itemsPerPage) != 0) pagesCount++;
+            InvoicesOnPage = Invoices.Skip((currentPage - 1) * itemsPerPage).Take(itemsPerPage).ToList();
+        }
+    }
+
+    void SelectedPageChanged(int x)
+    {
+        currentPage = x;
+        InvoicesOnPage = Invoices.Skip((currentPage - 1) * itemsPerPage).Take(itemsPerPage).ToList();
+        StateHasChanged();
+    }
+}
