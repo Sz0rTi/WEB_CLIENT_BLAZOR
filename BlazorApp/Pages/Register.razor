@@ -3,26 +3,94 @@
 @inject IAuthService _service
 @inject NavigationManager NavigationManager
 
+@if (ShowModal == true)
+    {
+<div class="modal" tabindex="-1" style="display:block" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color:lightgrey">
+            @if (Success)
+            {
+                <div class="modal-header">
+
+                    <h3 class="modal-title">Zarejestrowano pomyślnie!</h3>
+                    <button type="button" class="close"
+                            @onclick="@(()=>Ok())">
+                        <span aria-hidden="true">X</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h3> Użytkownik zarejestrowany pomyślnie!</h3><br />
+                    <button class="btn btn-primary"
+                            @onclick="@(()=>Ok())">
+                        Ok
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="modal-header">
+
+                    <h3 class="modal-title">Błąd!</h3>
+                    <button type="button" class="close"
+                            @onclick="@(()=>ShowModal=false)">
+                        <span aria-hidden="true">X</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h3> @Error</h3><br />
+                    <button class="btn btn-primary"
+                            @onclick="@(()=>ShowModal=false)">
+                        Ok
+                    </button>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+    }
+
 <h3>Rejestracja użytkownika</h3>
 
 <form @onsubmit="RegisterMethod">
-    <p>Email: </p>
-    <input type="text" @bind="Email" required /><br />
-    <p>Hasło: </p>
-    <input type="password" @bind="Password" required /><br />
-    <p style="display: inline-block;">Powtórz hasło: </p>
-    <input type="password" @bind="ConfirmedPassword" required />
-    <p>Nazwa firmy: </p>
-    <input type="text" @bind="Name" required />
-    <p>Adres: </p>
-    <input type="text" @bind="Address" required />
-    <p>Numer pocztowy: </p>
-    <input type="text" @bind="PostCode" required />
-    <p>Miejscowość: </p>
-    <input type="text" @bind="City" required />
-    <p>NIP: </p>
-    <input type="text" @bind="NIP" required />
-    <button type="submit">Stwórz</button>
+    <table style="width:40%;">
+        <col style="width:25%" />
+        <col style="width:75%" />
+        <tr>
+            <td>E-mail</td>
+            <td><input type="email" @bind="Email" required style="width:100%" /></td>
+        </tr>
+        <tr>
+            <td>Hasło</td>
+            <td><input type="password" @bind="Password" required style="width:100%" /></td>
+        </tr>
+        <tr>
+            <td>Powtórz hasło</td>
+            <td><input type="password" @bind="ConfirmedPassword" required style="width:100%" /></td>
+        </tr>
+        <tr>
+            <td>Nazwa firmy</td>
+            <td><input type="text" @bind="Name" required style="width:100%" /></td>
+        </tr>
+        <tr>
+            <td>Adres</td>
+            <td><input type="text" @bind="Address" required style="width:100%" /></td>
+        </tr>
+        <tr>
+            <td>Kod pocztowy</td>
+            <td><input type="text" @bind="PostCode" required style="width:100%" /></td>
+        </tr>
+        <tr>
+            <td>Miejscowość</td>
+            <td><input type="text" @bind="City" required style="width:100%" /></td>
+        </tr>
+        <tr>
+            <td>NIP</td>
+            <td><input type="text" @bind="NIP" required min="10" max="13" style="width:100%" /></td>
+        </tr>
+    </table><br /><br />
+
+    <button class="btn btn-primary" type="submit">Zarejestruj</button>
 
 </form>
 
@@ -36,15 +104,40 @@
     private string City { get; set; }
     private string NIP { get; set; }
 
+    private bool Success { get; set; }
+    private string Error { get; set; }
+    private bool ShowModal { get; set; }
+
 
     async void RegisterMethod()
     {
-        RegisterModel model = new RegisterModel { Email = Email, Password = Password, ConfirmPassword = ConfirmedPassword,
-                Name = Name, Address = Address, PostCode = PostCode, City = City, NIP = NIP};
+        RegisterModel model = new RegisterModel
+        {
+            Email = Email,
+            Password = Password,
+            ConfirmPassword = ConfirmedPassword,
+            Name = Name,
+            Address = Address,
+            PostCode = PostCode,
+            City = City,
+            NIP = NIP
+        };
         RegisterResult result = await _service.Register(model);
         if (result.Successful)
         {
-            NavigationManager.NavigateTo("/login");
+            Success = true;
         }
+        else
+        {
+            Success = false;
+            Error = result.Errors.ElementAt(0);
+        }
+        ShowModal = true;
+    }
+
+    void Ok()
+    {
+        ShowModal = false;
+        NavigationManager.NavigateTo("/login");
     }
 }

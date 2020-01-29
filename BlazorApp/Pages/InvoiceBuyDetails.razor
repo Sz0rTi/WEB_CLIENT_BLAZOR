@@ -18,7 +18,7 @@ else
             <table>
                 <tr>
                     <td>Nazwa firmy </td>
-                    <td>@Seller.Name</td>
+                    <td><a href="sellers/@Invoice.SellerID.ToString()">@Seller.Name</a></td>
                 </tr>
                 <tr>
                     <td>Ulica </td>
@@ -50,7 +50,7 @@ else
                 </tr>
                 <tr>
                     <td>Czy opłacona?</td>
-                    @if(Invoice.IsPaid)
+                    @if (Invoice.IsPaid)
                     {
                         <td>Tak</td>
                     }
@@ -61,33 +61,59 @@ else
                 </tr>
             </table>
             <br />
-            <button type="button" @onclick="()=>PayInvoice(Invoice.ID)">Opłacono</button>
+            @if (!Invoice.IsPaid)
+            {
+                <button type="button" @onclick="()=>PayInvoice(Invoice.ID)">Opłacono</button>
+            }
+
         </div>
     </div>
     <br />
     <table width="100%">
-        <col style="width:50%">
-        <col style="width:15%">
-        <col style="width:15%">
-        <col style="width:15%">
+        <col style="width:40%">
+        <col style="width:5%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:5%">
+        <col style="width:10%">
         <col style="width:10%">
         <tr>
             <th>Nazwa towaru</th>
-            <th>J.M.</th>
             <th>Ilość</th>
-            <th>Cena</th>
+            <th>J.M.</th>
+            <th>Cena netto</th>
+            <th>Cena brutto</th>
+            <th>VAT</th>
             <th>Wartość netto</th>
+            <th>Wartość brutto</th>
         </tr>
         @foreach (var item in Invoice.ProductsBuy)
         {
             <tr>
                 <td>@item.Name</td>
-                <td>@GetUnitName(item.UnitID)</td>
                 <td>@item.Amount</td>
+                <td>@GetUnitName(item.UnitID)</td>
                 <td>@item.PricePerItemNetto.ToString("N2")zł</td>
-                <td>@item.PricePerItemNetto * @item.Amount).ToString("N2")zł</td>
+                <td>@item.PricePerItemBrutto.ToString("N2")zł</td>
+                <td>@(TaxStages.Where(t => t.ID == item.TaxStageID).First().Stage.ToString())%</td>
+                <td>@((item.PricePerItemNetto * @item.Amount).ToString("N2"))zł</td>
+                <td>@((item.PricePerItemBrutto * @item.Amount).ToString("N2"))zł</td>
             </tr>
         }
+        <tr>
+            <td colspan="8"></td>
+        </tr>
+        <tr>
+            <td colspan="6"></td>
+            <td><b>Łącznie netto</b></td>
+            <td><b>@Invoice.PriceNetto.ToString("N2") zł</b></td>
+        </tr>
+        <tr>
+            <td colspan="6"></td>
+            <td><b>Łącznie brutto</b></td>
+            <td><b>@Invoice.PriceBrutto.ToString("N2") zł</b></td>
+        </tr>
     </table>
     <br />
     <button type="button" class="btn btn-primary" @onclick="@( ()=>NavigationManager.NavigateTo("invoicesbuylist") )">Wróć do listy</button>
@@ -97,6 +123,7 @@ else
     private InvoiceBuy Invoice { get; set; }
     private Seller Seller { get; set; }
     private List<Unit> Units { get; set; }
+    private List<TaxStage> TaxStages { get; set; }
     [Parameter]
     public string Id { get; set; }
     const string _URL = "https://localhost:5001/api/";
@@ -106,6 +133,7 @@ else
         Invoice = await Http.GetJsonAsync<InvoiceBuy>(_URL + Controller.invoicebuys + "/" + Id);
         Seller = await Http.GetJsonAsync<Seller>(_URL + Controller.sellers + "/" + Invoice.SellerID.ToString());
         Units = await Http.GetJsonAsync<List<Unit>>(_URL + Controller.units);
+        TaxStages = await Http.GetJsonAsync<List<TaxStage>>(_URL + Controller.taxstages);
 
     }
 

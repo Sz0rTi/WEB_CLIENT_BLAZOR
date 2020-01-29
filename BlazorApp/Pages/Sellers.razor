@@ -1,4 +1,5 @@
 ﻿@page "/sellers"
+@page "/sellers/{id}"
 @attribute [Authorize]
 @using Models
 @using Models.Out
@@ -6,8 +7,6 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject Blazored.LocalStorage.ILocalStorageService _localStorage
-
-<h3>Sellers</h3>
 
 @if (SellersList == null)
 {
@@ -119,7 +118,7 @@ else
                 else
                 {
                     <li class="page-item">
-                        <a class="page-link" aria-disabled="false" @onclick="@(()=>SelectedPageChanged(currentPage+1))">Następna</a>
+                        <a class="page-link" @onclick="@(()=>SelectedPageChanged(currentPage+1))" tabindex="-1">Następna</a>
                     </li>
                 }
 
@@ -129,6 +128,8 @@ else
 }
 
 @code {
+    [Parameter]
+    public string id { get; set; }
     private List<Seller> SellersList { get; set; }
     private string selectedSeller { get; set; }
     private Seller Seller { get; set; }
@@ -143,6 +144,12 @@ else
     {
         SellersList = await Http.GetJsonAsync<List<Seller>>(_URL + Controller.sellers);
         SellersList = SellersList.OrderBy(c => c.Name).ToList();
+        if(id != null)
+        {
+            Seller = await Http.GetJsonAsync<Seller>(_URL + Controller.sellers + "/" + id);
+            await SelectedSellerChanged(new ChangeEventArgs { Value = Seller.Name });
+            SelectedPageChanged(1);
+        }
     }
 
     async Task SelectedSellerChanged(ChangeEventArgs e)

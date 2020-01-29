@@ -152,7 +152,7 @@ else
             else
             {
                 <li class="page-item">
-                    <a class="page-link" aria-disabled="false" @onclick="@(()=>SelectedPageChanged(currentPage+1))">Następna</a>
+                    <a class="page-link" @onclick="@(()=>SelectedPageChanged(currentPage+1))" tabindex="-1">Następna</a>
                 </li>
             }
 
@@ -174,11 +174,13 @@ else
                 private List<InvoiceBuy> InvoicesOnPage { get; set; }
                 private int pagesCount { get; set; }
                 private int currentPage { get; set; } = 1;
-                private int itemsPerPage { get; set; } = 5;
+                private int itemsPerPage { get; set; } 
 
 
                 protected override async Task OnInitializedAsync()
                 {
+                    itemsPerPage = int.Parse(await _localStorage.GetItemAsync<string>("itemsPerPage"));
+
                     CurrentData = DateTime.Now;
                     try
                     {

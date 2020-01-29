@@ -61,6 +61,8 @@ else
 
             </select>
         </div>
+        <br />
+        <button type="button" class="btn btn-primary" @onclick="NewSummary">Nowe zestawienie</button>
 
         <table>
             <tr>
@@ -159,6 +161,7 @@ else
             {
                 SelectedMonthChanged(new ChangeEventArgs { Value = 1 });
             }
+            SummariesList = SummariesList.OrderByDescending(t => t.Date).ToList();
             base.StateHasChanged();
         }
     }
@@ -175,7 +178,16 @@ else
         else
         {
             SummariesList = temp;
+            SummariesList = SummariesList.OrderByDescending(t => t.Date).ToList();
         }
         base.StateHasChanged();
+    }
+
+    async void NewSummary()
+    {
+        var temp = await Http.PostJsonAsync<Summary>(_URL + Controller.summaries, new InvoicesDate { Month = selectedMonth, Year = selectedYear });
+        SummariesList.Add(temp);
+        SummariesList = SummariesList.OrderByDescending(t => t.Date).ToList();
+        StateHasChanged();
     }
 }
