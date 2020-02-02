@@ -15,9 +15,14 @@
 }
 else
 {
+
+
     if (MinDate == null)
     {
         <h3>Brak zestawień!</h3>
+
+        <br />
+        <button type="button" class="btn btn-primary" @onclick="NewSummary">Nowe zestawienie</button>
     }
     else
     {
@@ -63,7 +68,7 @@ else
         </div>
         <br />
         <button type="button" class="btn btn-primary" @onclick="NewSummary">Nowe zestawienie</button>
-
+        <br />
         <table>
             <tr>
                 <th>Okres</th>
@@ -108,6 +113,12 @@ else
         catch (Exception e)
         {
             MinDate = null;
+        }
+        if (MinDate == null)
+        {
+            MinDate = new InvoicesDate { Year = DateTime.Now.Year, Month = DateTime.Now.Month };
+            selectedYear = MinDate.Year;
+            selectedMonth = MinDate.Month;
         }
         Months.Add(1, "Styczeń");
         Months.Add(2, "Luty");
