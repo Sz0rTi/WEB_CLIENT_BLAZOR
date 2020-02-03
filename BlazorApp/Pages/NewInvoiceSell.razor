@@ -173,6 +173,10 @@ else
                             <td><input type="text" class="contact" id="postcode" @bind="@ModelClientOut.PostCode" required /></td>
                         </tr>
                         <tr>
+                            <td>Miejscowość </td>
+                            <td><input type="text" class="contact" id="city" @bind="@ModelClientOut.City" required /></td>
+                        </tr>
+                        <tr>
                             <td>NIP </td>
                             <td><input type="text" class="contact" id="nipIT" @bind="@ModelClientOut.NIP" required style="width:67%;" /><button class="btn btn-primary" type="submit" @onclick="SearchByNip" style="font-size:10px">Szukaj po NIP</button></td>
                         </tr>

@@ -84,12 +84,7 @@ else
                 <td>Kategoria</td>
                 <td>@GetCategory(product.CategoryID)</td>
             </tr>
-            <tr>
-                <td>Opis</td>
-                <td>@product.Description</td>
-            </tr>
         </table>
-        <button type="button" @onclick="@(()=>ShowEditModal=true)">Dodaj opis</button>
     }
 }
 
