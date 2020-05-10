@@ -8,29 +8,6 @@
 
 <h3>Nowa faktura zakupowa</h3>
 
-@if (ShowNewCategoryModal == true)
-{
-    <div class="modal" tabindex="-1" style="display:block;" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content" style="background-color:darkgray;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Nowa kategoria</h3>
-                    <button type="button" class="close"
-                            @onclick="@(() => ShowNewCategoryModal = false)">
-                        <span aria-hidden="true">X</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form @onsubmit="CloseNewCategory">
-                        <input type="text" @bind="newCategoryName" required />
-                        <button type="submit">Dodaj</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 @if (Units == null || Sellers == null || Categories == null)
 {
     <h2>Ładowanie strony...</h2>
@@ -74,7 +51,7 @@ else
     {
         <div class="modal" tabindex="-1" style="display:block" role="dialog">
             <div class="modal-dialog">
-                <div class="modal-content" style="background-color:lightgray;">
+                <div class="modal-content" style="background-color:#d4edda;border-color:#c3e6cb;border-width:medium;">
                     <div class="modal-header">
                         <h3 class="modal-title">Nowa pozycja</h3>
                         <button type="button" class="close"
@@ -101,7 +78,7 @@ else
                                         }
                                     </select>
 
-                                    <button type="button" @onclick="@(() => ShowNewCategoryModal = true)">Nowa kategoria</button>
+                                    <button type="button" @onclick="@(() => { ShowNewCategoryModal = true; ShowNewProduct = false; })">Nowa kategoria</button>
                                     <br /><br />
 
                                 </div>
@@ -226,15 +203,38 @@ else
 
     }
 
+    @if (ShowNewCategoryModal == true)
+    {
+        <div class="modal" tabindex="-1" style="display:block;" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content" style="background-color:#e2e3e5;border-color:#d6d8db;border-width:medium;margin-top:100px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Nowa kategoria</h3>
+                        <button type="button" class="close"
+                                @onclick="@(() => { ShowNewCategoryModal = false; ShowNewProduct = true; })">
+                            <span aria-hidden="true">X</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form @onsubmit="CloseNewCategory">
+                            <input type="text" @bind="newCategoryName" required />
+                            <button type="submit">Dodaj</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     <div id="main">
         <div id="clientInfo" class="row">
             <div class="col-6">
                 <table class="contact">
-                    <col style="width:35%">
-                    <col style="width:65%">
-                    <tr>
-                        <td>Nazwa firmy: </td>
-                        <td>
+                    <col style="width:auto;">
+                    <col style="width:auto">
+                    <tr class="contact">
+                        <td class="contact">Nazwa firmy: </td>
+                        <td class="contact">
                             @if (Sellers.Count == 0)
                             {
                                 <input class="contact" type="text" @bind-value="seller.Name" @bind-value:event="SelectedClientChanged" required />
@@ -258,25 +258,31 @@ else
                             }
                         </td>
                     </tr>
-                    <tr>
-                        <td>Ulica </td>
-                        <td><input type="text" class="contact" id="street" @bind="@ModelSellerOut.Street" required /></td>
+                    <tr class="contact">
+                        <td class="contact">Ulica: </td>
+                        <td class="contact"><input type="text" class="contact" id="street" @bind="@ModelSellerOut.Street" required /></td>
                     </tr>
-                    <tr>
-                        <td>Numer </td>
-                        <td><input type="text" class="contact" id="number" @bind="@ModelSellerOut.Number" required /></td>
+                    <tr class="contact">
+                        <td class="contact">Numer: </td>
+                        <td class="contact"><input type="text" class="contact" id="number" @bind="@ModelSellerOut.Number" required /></td>
                     </tr>
-                    <tr>
-                        <td>Kod pocztowy </td>
-                        <td><input type="text" class="contact" id="postcode" @bind="@ModelSellerOut.PostCode" required /></td>
+                    <tr class="contact">
+                        <td class="contact">Kod pocztowy: </td>
+                        <td class="contact"><input type="text" class="contact" id="postcode" @bind="@ModelSellerOut.PostCode" required /></td>
                     </tr>
-                    <tr>
-                        <td>Miejscowość </td>
-                        <td><input type="text" class="contact" id="city" @bind="@ModelSellerOut.City" required /></td>
+                    <tr class="contact">
+                        <td class="contact">Miejscowość: </td>
+                        <td class="contact"><input type="text" class="contact" id="city" @bind="@ModelSellerOut.City" required /></td>
                     </tr>
-                    <tr>
-                        <td>NIP </td>
-                        <td><input type="text" class="contact" id="nipIT" @bind="@ModelSellerOut.NIP" required style="width:67%;" /><button class="btn btn-primary" type="submit" @onclick="SearchByNip" style="font-size:10px">Szukaj po NIP</button></td>
+                    <tr class="contact">
+                        <td class="contact">NIP:</td>
+                        <td class="contact"><input type="text" class="contact" id="nipIT" @bind="@ModelSellerOut.NIP" required /></td>
+                    </tr>
+                    <tr class="contact">
+                        <td class="contact"></td>
+                        <td class="contact" style="text-align:right;">
+                            <button class="btn btn-primary" type="submit" @onclick="SearchByNip" style="font-size:10px">Szukaj po NIP</button>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -330,8 +336,8 @@ else
                 <button type="button" class="btn btn-success" @onclick="@(() => ShowNewProduct = true)">Nowa pozycja</button>
 
                 <br /><br />
-                <table width="100%">
-                    <col style="width:34%">
+                <table class="table table-bordered" width="100%">
+                    <col style="width:30%">
                     <col style="width:5%">
                     <col style="width:7%">
                     <col style="width:5%">
@@ -339,7 +345,7 @@ else
                     <col style="width:10%">
                     <col style="width:12%">
                     <col style="width:12%">
-                    <col style="width:5%" />
+                    <col style="width:9%" />
                     <thead>
                         <tr>
                             <th>Nazwa</th>
@@ -365,7 +371,7 @@ else
                                 <th>@item.PricePerItemBrutto.ToString("N2") zł</th>
                                 <th>@((item.PricePerItemNetto * item.Amount).ToString("N2")) zł</th>
                                 <th>@((item.PricePerItemBrutto * item.Amount).ToString("N2")) zł</th>
-                                <th><button type="button" class="bg-warning" @onclick="@(() => DeleteProductSell(item))">Usuń</button></th>
+                                <th><button type="button" class="btn btn-danger" style="margin:auto;display:block;" @onclick="@(() => DeleteProductSell(item))">Usuń</button></th>
                             </tr>
                         }
                     </tbody>
@@ -715,11 +721,12 @@ else
 
     async void CloseNewCategory()
     {
-        if (newCategoryName != null && newCategoryName != "" && !(Categories.Any(c => c.Name == newCategoryName)))
+        if (!string.IsNullOrEmpty(newCategoryName.Trim()) && !(Categories.Any(c => c.Name == newCategoryName.Trim())))
         {
-            var response = await Http.PostJsonAsync<Category>(_URL + Controller.categories, new CategoryOut { Name = newCategoryName });
+            var response = await Http.PostJsonAsync<Category>(_URL + Controller.categories, new CategoryOut { Name = newCategoryName.Trim() });
             Categories.Add(response);
             ShowNewCategoryModal = false;
+            ShowNewProduct = true;
             StateHasChanged();
         }
     }

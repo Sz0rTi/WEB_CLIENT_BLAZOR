@@ -29,7 +29,24 @@ label.contact{
     width:100%;
 }
 
-table, th, td {
+
+table{
+    border-radius: 25px;
+    border: 1px solid black;
+    padding: 20px;
+    table-layout: fixed;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+th {
+    border: 1px solid black;
+    table-layout: fixed;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+td {
     border: 1px solid black;
     table-layout: fixed;
     width: 100%;
@@ -37,22 +54,26 @@ table, th, td {
 }
 
 table.contact {
-    border: 1px solid black;
+    border: medium;
+    border-color: #d6d8db;
     table-layout: fixed;
     width: 100%;
-    word-wrap: break-word;
+    word-wrap: break-word
 }
-    table.contact th{
-        width:auto;
+    table.contact th {
+        border: 0;
+        width: auto;
     }
     table.contact td {
+        border: 0;
+        padding: 4px;
+        text-align: right;
         width: 50%;
     }
 
     .btn-primary {
         color: #fff;
         background-color: #1b6ec2;
-        border-color: #1861ac;
     }
 
 app {
